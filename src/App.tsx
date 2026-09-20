@@ -1,6 +1,7 @@
 import './App.css'
 import GraphCanvas from './ui/GraphCanvas'
 import GraphControls from './ui/GraphControls'
+import RepresentationPanels from './ui/RepresentationPanels'
 import { useGraphStore } from './ui/graphStore'
 
 export default function App() {
@@ -32,6 +33,8 @@ export default function App() {
         </div>
         <GraphControls />
       </div>
+
+      <RepresentationPanels />
     </main>
   )
 }
