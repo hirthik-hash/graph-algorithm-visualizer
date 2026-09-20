@@ -1,4 +1,5 @@
 import './App.css'
+import AnalysisPanel from './ui/AnalysisPanel'
 import GraphCanvas from './ui/GraphCanvas'
 import GraphControls from './ui/GraphControls'
 import RepresentationPanels from './ui/RepresentationPanels'
@@ -33,6 +34,8 @@ export default function App() {
         </div>
         <GraphControls />
       </div>
+
+      <AnalysisPanel />
 
       <RepresentationPanels />
     </main>
