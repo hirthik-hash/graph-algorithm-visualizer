@@ -1,8 +1,37 @@
+import './App.css'
+import GraphCanvas from './ui/GraphCanvas'
+import GraphControls from './ui/GraphControls'
+import { useGraphStore } from './ui/graphStore'
+
 export default function App() {
+  const notice = useGraphStore((s) => s.notice)
+  const dismissNotice = useGraphStore((s) => s.dismissNotice)
+  const nodeCount = useGraphStore((s) => s.graph.nodes.length)
+  const edgeCount = useGraphStore((s) => s.graph.edges.length)
+
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: 24 }}>
+    <main className="app">
       <h1>Graph Algorithm Visualizer</h1>
-      <p>Day 1: scaffolding + graph model. The canvas arrives on Day 3.</p>
+
+      {notice && (
+        <p role="alert" className="notice">
+          {notice}{' '}
+          <button onClick={dismissNotice} aria-label="Dismiss message">
+            ×
+          </button>
+        </p>
+      )}
+
+      <div className="layout">
+        <div>
+          <GraphCanvas />
+          <p className="hint">
+            Click empty space to add a node · drag a node to move it · click a node, then another, to connect them ·
+            click a node twice quickly to delete it · {nodeCount} nodes, {edgeCount} edges
+          </p>
+        </div>
+        <GraphControls />
+      </div>
     </main>
   )
 }

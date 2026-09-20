@@ -1,0 +1,143 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --panel: #f5f6f8;
+  --text: #1c1e21;
+  --muted: #5b6270;
+  --border: #c9ced6;
+  --accent: #2563eb;
+  --node-fill: #e8f0fe;
+  --node-stroke: #2563eb;
+  --source: #f59e0b;
+  --edge: #6b7280;
+  --warn-bg: #fff4d6;
+  --warn-text: #5c3d00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --panel: #1e2126;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --border: #3a3f47;
+    --accent: #6b9bff;
+    --node-fill: #1f2b45;
+    --node-stroke: #6b9bff;
+    --source: #fbbf24;
+    --edge: #8b93a1;
+    --warn-bg: #3a2f10;
+    --warn-text: #ffe29a;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px 32px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  touch-action: none; /* lets touch-drag move nodes instead of scrolling the page */
+  user-select: none;
+}
+
+.node circle {
+  fill: var(--node-fill);
+  stroke: var(--node-stroke);
+  stroke-width: 2;
+  cursor: grab;
+}
+.node text {
+  fill: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.node--source circle {
+  stroke: var(--source);
+  stroke-width: 4;
+}
+
+.edge {
+  stroke: var(--edge);
+  stroke-width: 2;
+}
+.arrowhead {
+  fill: var(--edge);
+}
+.edge-label {
+  fill: var(--text);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.controls {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.controls h2 {
+  font-size: 15px;
+  margin: 12px 0 0;
+}
+.controls h2:first-child {
+  margin-top: 0;
+}
+.controls .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.controls input[type='number'],
+.controls input[type='text'] {
+  min-width: 0;
+  flex: 1;
+}
+
+.notice {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 0 0 12px;
+}
+.notice button {
+  margin-left: 8px;
+}
