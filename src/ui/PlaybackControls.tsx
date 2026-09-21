@@ -8,8 +8,10 @@ import { explainEvent } from '../engine/explain'
 import { bellmanFordAlgorithm } from '../algorithms/bellmanFord'
 import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
+import { dfsTopoSortAlgorithm } from '../algorithms/dfsTopoSort'
 import { dijkstraAlgorithm } from '../algorithms/dijkstra'
 import { floydWarshallAlgorithm } from '../algorithms/floydWarshall'
+import { kahnsTopoSortAlgorithm } from '../algorithms/kahnsTopoSort'
 import { kruskalAlgorithm } from '../algorithms/kruskal'
 import { primAlgorithm } from '../algorithms/prim'
 import { useGraphStore } from './graphStore'
@@ -23,6 +25,8 @@ const ALGORITHMS: Algorithm[] = [
   floydWarshallAlgorithm,
   primAlgorithm,
   kruskalAlgorithm,
+  kahnsTopoSortAlgorithm,
+  dfsTopoSortAlgorithm,
 ]
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */
