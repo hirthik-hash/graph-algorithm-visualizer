@@ -339,3 +339,56 @@ body {
   font-family: system-ui, sans-serif;
   font-size: 13px;
 }
+
+/* ---- Day 8: matrix view + union-find ---- */
+.node--waypoint circle {
+  stroke: #a855f7;
+  stroke-width: 5;
+}
+.muted {
+  color: var(--muted);
+  font-weight: 400;
+}
+.fw-view {
+  margin-top: 16px;
+}
+.matrix .waypoint {
+  background: var(--node-fill);
+}
+.matrix td.on-waypoint {
+  background: color-mix(in srgb, var(--node-fill) 60%, transparent);
+}
+.matrix td.improved {
+  background: var(--visited-fill);
+  color: var(--visited-stroke);
+  font-weight: 700;
+}
+.matrix td.negative-cycle {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  font-weight: 700;
+}
+
+.uf-demo {
+  margin-top: 16px;
+}
+.uf-demo .row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.uf-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.uf-root td:first-child {
+  font-weight: 700;
+}
+.uf-log {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}

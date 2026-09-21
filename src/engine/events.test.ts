@@ -12,6 +12,16 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
   update_distance: { type: 'update_distance', nodeId: 'B', distance: 3, previousDistance: null, viaNodeId: 'A' },
   mark_visited: { type: 'mark_visited', nodeId: 'B' },
   negative_cycle_detected: { type: 'negative_cycle_detected', edgeId: 'e2' },
+  matrix_update: {
+    type: 'matrix_update',
+    nodeIds: ['A', 'B'],
+    matrix: [
+      [0, 3],
+      [null, 0],
+    ],
+    waypointNodeId: 'A',
+    changed: [[0, 1]],
+  },
   finish: { type: 'finish', result: { hasCycle: false, order: ['A', 'B'], nested: { ok: true } } },
 }
 
@@ -27,6 +37,7 @@ describe('algorithm events', () => {
         'enqueue',
         'finish',
         'mark_visited',
+        'matrix_update',
         'negative_cycle_detected',
         'relax_edge',
         'update_distance',

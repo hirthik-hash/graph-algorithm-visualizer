@@ -15,6 +15,7 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
   update_distance: { type: 'update_distance', nodeId: 'B', distance: 3, previousDistance: null, viaNodeId: 'A' },
   mark_visited: { type: 'mark_visited', nodeId: 'B' },
   negative_cycle_detected: { type: 'negative_cycle_detected', edgeId: 'e2' },
+  matrix_update: { type: 'matrix_update', nodeIds: ['A', 'B'], matrix: [[0, 3], [null, 0]], waypointNodeId: 'A', changed: [[0, 1]] },
   finish: { type: 'finish', result: {} },
 }
 
@@ -77,5 +78,19 @@ describe('explainEvent', () => {
       expect(sentences.length).toBeGreaterThan(3)
       for (const s of sentences) expect(s).toMatch(/^[A-Z].*\.$/)
     }
+  })
+
+  it('explains matrix snapshots: the initial one, a waypoint with no change, one change, several changes', () => {
+    const base = { type: 'matrix_update' as const, nodeIds: ['A', 'B'], matrix: [[0, 1], [1, 0]] }
+    expect(explainEvent({ ...base, changed: [] })).toBe('Built the starting distance matrix from the edges.')
+    expect(explainEvent({ ...base, waypointNodeId: 'A', changed: [] })).toBe(
+      'Allowing paths through A: no distances improved.',
+    )
+    expect(explainEvent({ ...base, waypointNodeId: 'B', changed: [[0, 1]] })).toBe(
+      'Allowing paths through B: 1 distance improved.',
+    )
+    expect(explainEvent({ ...base, waypointNodeId: 'B', changed: [[0, 1], [1, 0]] })).toBe(
+      'Allowing paths through B: 2 distances improved.',
+    )
   })
 })

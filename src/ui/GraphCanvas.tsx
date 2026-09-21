@@ -74,6 +74,7 @@ export default function GraphCanvas() {
   const nodeClass = (nodeId: string) => {
     const classes = ['node']
     if (nodeId === connectFromId) classes.push('node--source')
+    if (nodeId === highlights.waypoint) classes.push('node--waypoint')
     if (nodeId === highlights.active) classes.push('node--active')
     else if (highlights.visited.has(nodeId)) classes.push('node--visited')
     else if (highlights.frontier.has(nodeId)) classes.push('node--frontier')

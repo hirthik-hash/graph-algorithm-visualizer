@@ -5,13 +5,21 @@
  */
 import type { Algorithm } from '../engine/algorithm'
 import { explainEvent } from '../engine/explain'
+import { bellmanFordAlgorithm } from '../algorithms/bellmanFord'
 import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
 import { dijkstraAlgorithm } from '../algorithms/dijkstra'
+import { floydWarshallAlgorithm } from '../algorithms/floydWarshall'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
-const ALGORITHMS: Algorithm[] = [bfsAlgorithm, dfsAlgorithm, dijkstraAlgorithm]
+const ALGORITHMS: Algorithm[] = [
+  bfsAlgorithm,
+  dfsAlgorithm,
+  dijkstraAlgorithm,
+  bellmanFordAlgorithm,
+  floydWarshallAlgorithm,
+]
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */
 const delayToSpeed = (delayMs: number) => Math.min(10, Math.max(1, Math.round(1200 / delayMs)))

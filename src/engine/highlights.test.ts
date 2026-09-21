@@ -81,4 +81,22 @@ describe('computeHighlights', () => {
     expect(computeHighlights(events.slice(0, 1)).distances.get('B')).toBe(9)
     expect(computeHighlights(events.slice(0, 0)).distances.has('B')).toBe(false)
   })
+
+  it('keeps the latest matrix snapshot and its waypoint (Floyd-Warshall)', () => {
+    const first: AlgorithmEvent = { type: 'matrix_update', nodeIds: ['A', 'B'], matrix: [[0, 5], [null, 0]], changed: [] }
+    const second: AlgorithmEvent = {
+      type: 'matrix_update',
+      nodeIds: ['A', 'B'],
+      matrix: [[0, 3], [null, 0]],
+      waypointNodeId: 'A',
+      changed: [[0, 1]],
+    }
+    const initial = computeHighlights([first])
+    expect(initial.matrix).toBe(first)
+    expect(initial.waypoint).toBeNull()
+    const later = computeHighlights([first, second])
+    expect(later.matrix).toBe(second)
+    expect(later.waypoint).toBe('A')
+    expect(computeHighlights([]).matrix).toBeNull()
+  })
 })

@@ -63,6 +63,14 @@ export function explainEvent(event: AlgorithmEvent, labelOf: (nodeId: string) =>
     case 'negative_cycle_detected':
       return `Negative cycle detected: edge ${event.edgeId} can still be shortened.`
 
+    case 'matrix_update': {
+      if (event.waypointNodeId === undefined) return 'Built the starting distance matrix from the edges.'
+      const node = labelOf(event.waypointNodeId)
+      const n = event.changed.length
+      if (n === 0) return `Allowing paths through ${node}: no distances improved.`
+      return `Allowing paths through ${node}: ${n} distance${n === 1 ? '' : 's'} improved.`
+    }
+
     case 'finish':
       return 'Finished.'
 

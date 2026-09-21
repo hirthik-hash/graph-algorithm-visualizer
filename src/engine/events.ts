@@ -92,6 +92,22 @@ export interface NegativeCycleDetectedEvent {
   edgeId: string
 }
 
+/**
+ * A snapshot of an all-pairs distance matrix (Floyd-Warshall). One event per
+ * waypoint node, NOT one per cell: a per-cell event would be O(n^3) events.
+ * `null` in the matrix means "no path" (infinity). `nodeIds` gives the row and
+ * column order, so the event is self-contained. `waypointNodeId` is the node
+ * just allowed as an intermediate stop (absent on the initial matrix), and
+ * `changed` lists the [row, column] cells that improved in this snapshot.
+ */
+export interface MatrixUpdateEvent {
+  type: 'matrix_update'
+  nodeIds: string[]
+  matrix: (number | null)[][]
+  waypointNodeId?: string
+  changed: [number, number][]
+}
+
 /** The algorithm is done. `result` carries algorithm-specific outputs (JSON only). */
 export interface FinishEvent {
   type: 'finish'
@@ -106,6 +122,7 @@ export type AlgorithmEvent =
   | UpdateDistanceEvent
   | MarkVisitedEvent
   | NegativeCycleDetectedEvent
+  | MatrixUpdateEvent
   | FinishEvent
 
 export type AlgorithmEventType = AlgorithmEvent['type']
@@ -124,6 +141,7 @@ const EVENT_TYPE_SET: Record<AlgorithmEventType, true> = {
   update_distance: true,
   mark_visited: true,
   negative_cycle_detected: true,
+  matrix_update: true,
   finish: true,
 }
 
