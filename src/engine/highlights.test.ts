@@ -99,4 +99,24 @@ describe('computeHighlights', () => {
     expect(later.waypoint).toBe('A')
     expect(computeHighlights([]).matrix).toBeNull()
   })
+
+  it('collects accepted and rejected spanning-tree edges', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B' },
+      { type: 'reject_edge', edgeId: 'e3', source: 'A', target: 'C', reason: 'would_form_cycle' },
+      { type: 'add_to_mst', edgeId: 'e2', source: 'B', target: 'C' },
+    ]
+    const h = computeHighlights(events)
+    expect([...h.mstEdges]).toEqual(['e1', 'e2'])
+    expect([...h.rejectedEdges]).toEqual(['e3'])
+  })
+
+  it('only counts edges up to the current step (so stepping back un-highlights them)', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B' },
+      { type: 'add_to_mst', edgeId: 'e2', source: 'B', target: 'C' },
+    ]
+    expect([...computeHighlights(events.slice(0, 1)).mstEdges]).toEqual(['e1'])
+    expect(computeHighlights([]).mstEdges.size).toBe(0)
+  })
 })

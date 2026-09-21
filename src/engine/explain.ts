@@ -8,12 +8,16 @@
  * explained for free, and a new event type that isn't handled here is a
  * COMPILE error (see assertNever).
  */
-import type { AlgorithmEvent, FrontierStructure } from './events'
+import type { AlgorithmEvent, FrontierStructure, RejectReason } from './events'
 
 const structureName: Record<FrontierStructure, string> = {
   queue: 'the queue',
   stack: 'the stack',
   priority_queue: 'the priority queue',
+}
+
+const rejectReasonText: Record<RejectReason, string> = {
+  would_form_cycle: 'it would form a cycle',
 }
 
 function assertNever(value: never): never {
@@ -69,6 +73,17 @@ export function explainEvent(event: AlgorithmEvent, labelOf: (nodeId: string) =>
       const n = event.changed.length
       if (n === 0) return `Allowing paths through ${node}: no distances improved.`
       return `Allowing paths through ${node}: ${n} distance${n === 1 ? '' : 's'} improved.`
+    }
+
+    case 'add_to_mst': {
+      const weight = event.weight === undefined ? '' : `, weight ${event.weight}`
+      return `Added edge ${event.edgeId} (${labelOf(event.source)} — ${labelOf(event.target)}${weight}) to the spanning tree.`
+    }
+
+    case 'reject_edge': {
+      const weight = event.weight === undefined ? '' : `, weight ${event.weight}`
+      const edge = `${event.edgeId} (${labelOf(event.source)} — ${labelOf(event.target)}${weight})`
+      return `Rejected edge ${edge}: ${rejectReasonText[event.reason]}.`
     }
 
     case 'finish':

@@ -10,6 +10,8 @@ import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
 import { dijkstraAlgorithm } from '../algorithms/dijkstra'
 import { floydWarshallAlgorithm } from '../algorithms/floydWarshall'
+import { kruskalAlgorithm } from '../algorithms/kruskal'
+import { primAlgorithm } from '../algorithms/prim'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
@@ -19,6 +21,8 @@ const ALGORITHMS: Algorithm[] = [
   dijkstraAlgorithm,
   bellmanFordAlgorithm,
   floydWarshallAlgorithm,
+  primAlgorithm,
+  kruskalAlgorithm,
 ]
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */

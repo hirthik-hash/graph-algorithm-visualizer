@@ -39,7 +39,7 @@ export const bellmanFordAlgorithm: Algorithm = {
 
     const edges: DirectedEdge[] = []
     for (const e of graph.edges) {
-      const weight = e.weight ?? 1
+      const weight = graph.weighted ? (e.weight ?? 1) : 1 // hidden weights on an unweighted graph are ignored
       edges.push({ edgeId: e.id, source: e.source, target: e.target, weight })
       if (!graph.directed && e.source !== e.target) {
         edges.push({ edgeId: e.id, source: e.target, target: e.source, weight })

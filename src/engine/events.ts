@@ -92,6 +92,28 @@ export interface NegativeCycleDetectedEvent {
   edgeId: string
 }
 
+/** An edge was accepted into the spanning tree / forest (Prim's, Kruskal's). */
+export interface AddToMstEvent {
+  type: 'add_to_mst'
+  edgeId: string
+  source: string
+  target: string
+  weight?: number
+}
+
+/** Why an edge was refused. Only one reason so far; new reasons extend this union. */
+export type RejectReason = 'would_form_cycle'
+
+/** An edge was considered and refused (Kruskal's shows every rejection, with its reason). */
+export interface RejectEdgeEvent {
+  type: 'reject_edge'
+  edgeId: string
+  source: string
+  target: string
+  weight?: number
+  reason: RejectReason
+}
+
 /**
  * A snapshot of an all-pairs distance matrix (Floyd-Warshall). One event per
  * waypoint node, NOT one per cell: a per-cell event would be O(n^3) events.
@@ -123,6 +145,8 @@ export type AlgorithmEvent =
   | MarkVisitedEvent
   | NegativeCycleDetectedEvent
   | MatrixUpdateEvent
+  | AddToMstEvent
+  | RejectEdgeEvent
   | FinishEvent
 
 export type AlgorithmEventType = AlgorithmEvent['type']
@@ -142,6 +166,8 @@ const EVENT_TYPE_SET: Record<AlgorithmEventType, true> = {
   mark_visited: true,
   negative_cycle_detected: true,
   matrix_update: true,
+  add_to_mst: true,
+  reject_edge: true,
   finish: true,
 }
 

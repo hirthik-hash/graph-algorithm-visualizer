@@ -22,6 +22,8 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
     waypointNodeId: 'A',
     changed: [[0, 1]],
   },
+  add_to_mst: { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B', weight: 2 },
+  reject_edge: { type: 'reject_edge', edgeId: 'e3', source: 'A', target: 'C', weight: 5, reason: 'would_form_cycle' },
   finish: { type: 'finish', result: { hasCycle: false, order: ['A', 'B'], nested: { ok: true } } },
 }
 
@@ -33,12 +35,14 @@ describe('algorithm events', () => {
   it('lists every event type, derived from the union', () => {
     expect([...EVENT_TYPES].sort()).toEqual(
       [
+        'add_to_mst',
         'dequeue',
         'enqueue',
         'finish',
         'mark_visited',
         'matrix_update',
         'negative_cycle_detected',
+        'reject_edge',
         'relax_edge',
         'update_distance',
         'visit_node',

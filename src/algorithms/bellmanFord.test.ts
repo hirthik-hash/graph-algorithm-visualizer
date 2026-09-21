@@ -170,4 +170,10 @@ describe('Bellman-Ford', () => {
     expect(checkRequirements(dijkstraAlgorithm, g, { startNodeId: 'A' })).toHaveLength(1)
     expect(() => bellmanFordAlgorithm.run(g)).toThrow(/start node/i)
   })
+
+  it('ignores hidden weights when the graph is unweighted (each edge counts as 1)', () => {
+    const hidden = { ...graphOf({ directed: true }, ['A', 'B'], [['A', 'B', -50]]), weighted: false }
+    const result = finishResult(run(hidden, 'A'))
+    expect(result).toMatchObject({ distances: { A: 0, B: 1 }, negativeCycle: false })
+  })
 })

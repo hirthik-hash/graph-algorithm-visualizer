@@ -392,3 +392,22 @@ body {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* ---- Day 9: spanning trees ---- */
+:root {
+  --reject: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --reject: #f87171;
+  }
+}
+.edge--mst {
+  stroke: var(--visited-stroke);
+  stroke-width: 6;
+}
+.edge--rejected {
+  stroke: var(--reject);
+  stroke-width: 3;
+  stroke-dasharray: 8 5;
+}

@@ -69,8 +69,11 @@ export default function GraphCanvas() {
   // never needs to know which algorithm produced the events.
   const engine = usePlaybackStore((s) => s.engine)
   const highlights = useMemo(() => computeHighlights(engine?.eventsSoFar ?? []), [engine])
-  const edgeClass = (edgeId: string) =>
-    edgeId === highlights.examinedEdgeId ? 'edge edge--examined' : 'edge'
+  const edgeClass = (edgeId: string) => {
+    if (highlights.mstEdges.has(edgeId)) return 'edge edge--mst'
+    if (highlights.rejectedEdges.has(edgeId)) return 'edge edge--rejected'
+    return edgeId === highlights.examinedEdgeId ? 'edge edge--examined' : 'edge'
+  }
   const nodeClass = (nodeId: string) => {
     const classes = ['node']
     if (nodeId === connectFromId) classes.push('node--source')

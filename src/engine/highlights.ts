@@ -11,6 +11,7 @@
  *              after a DFS child finishes, the parent becomes active again.
  *  - examinedEdgeId: the edge from the LATEST event, if that event examined one
  *  - distances: each node's latest known distance (Day 7); unreached nodes are absent
+ *  - mstEdges / rejectedEdges: edges accepted / refused so far (Day 9, spanning trees)
  *  - matrix / waypoint: the latest matrix snapshot and its waypoint node (Day 8, Floyd-Warshall)
  */
 import type { AlgorithmEvent, MatrixUpdateEvent } from './events'
@@ -21,6 +22,8 @@ export interface Highlights {
   active: string | null
   examinedEdgeId: string | null
   distances: Map<string, number>
+  mstEdges: Set<string>
+  rejectedEdges: Set<string>
   matrix: MatrixUpdateEvent | null
   waypoint: string | null
 }
@@ -29,6 +32,8 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
   const visited = new Set<string>()
   const frontier = new Set<string>()
   const distances = new Map<string, number>()
+  const mstEdges = new Set<string>()
+  const rejectedEdges = new Set<string>()
   const activePath: string[] = []
   let matrix: MatrixUpdateEvent | null = null
 
@@ -55,6 +60,12 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
       case 'matrix_update':
         matrix = event
         break
+      case 'add_to_mst':
+        mstEdges.add(event.edgeId)
+        break
+      case 'reject_edge':
+        rejectedEdges.add(event.edgeId)
+        break
       default:
         break // relax_edge, finish, ... don't change node state
     }
@@ -67,6 +78,8 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
     active: activePath.length > 0 ? activePath[activePath.length - 1] : null,
     examinedEdgeId: last?.type === 'relax_edge' ? last.edgeId : null,
     distances,
+    mstEdges,
+    rejectedEdges,
     matrix,
     waypoint: matrix?.waypointNodeId ?? null,
   }

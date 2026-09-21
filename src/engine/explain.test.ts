@@ -16,6 +16,8 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
   mark_visited: { type: 'mark_visited', nodeId: 'B' },
   negative_cycle_detected: { type: 'negative_cycle_detected', edgeId: 'e2' },
   matrix_update: { type: 'matrix_update', nodeIds: ['A', 'B'], matrix: [[0, 3], [null, 0]], waypointNodeId: 'A', changed: [[0, 1]] },
+  add_to_mst: { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B', weight: 2 },
+  reject_edge: { type: 'reject_edge', edgeId: 'e3', source: 'A', target: 'C', weight: 5, reason: 'would_form_cycle' },
   finish: { type: 'finish', result: {} },
 }
 
@@ -91,6 +93,14 @@ describe('explainEvent', () => {
     )
     expect(explainEvent({ ...base, waypointNodeId: 'B', changed: [[0, 1], [1, 0]] })).toBe(
       'Allowing paths through B: 2 distances improved.',
+    )
+  })
+
+  it('explains accepted and rejected spanning-tree edges, with the rejection reason', () => {
+    expect(explainEvent(SAMPLES.add_to_mst)).toBe('Added edge e1 (A — B, weight 2) to the spanning tree.')
+    expect(explainEvent(SAMPLES.reject_edge)).toBe('Rejected edge e3 (A — C, weight 5): it would form a cycle.')
+    expect(explainEvent({ type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B' })).toBe(
+      'Added edge e1 (A — B) to the spanning tree.',
     )
   })
 })
