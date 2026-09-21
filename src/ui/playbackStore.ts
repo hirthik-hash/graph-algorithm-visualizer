@@ -22,6 +22,7 @@ const MAX_DELAY_MS = 3000
 interface PlaybackState {
   algorithm: Algorithm | null
   startNodeId: string | null
+  goalNodeId: string | null
   engine: StepEngine | null
   isPlaying: boolean
   delayMs: number
@@ -34,6 +35,7 @@ interface PlaybackState {
 
   selectAlgorithm: (algorithm: Algorithm | null) => void
   setStartNode: (nodeId: string | null) => void
+  setGoalNode: (nodeId: string | null) => void
   run: () => void
   play: () => void
   pause: () => void
@@ -75,6 +77,7 @@ function tick() {
 export const usePlaybackStore = create<PlaybackState>()((set, get) => ({
   algorithm: null,
   startNodeId: null,
+  goalNodeId: null,
   engine: null,
   isPlaying: false,
   delayMs: 600,
@@ -97,6 +100,11 @@ export const usePlaybackStore = create<PlaybackState>()((set, get) => ({
     set({ startNodeId: nodeId })
   },
 
+  setGoalNode: (nodeId) => {
+    get().clearRun()
+    set({ goalNodeId: nodeId })
+  },
+
   run: () => {
     const { algorithm } = get()
     clearTimer()
@@ -108,21 +116,29 @@ export const usePlaybackStore = create<PlaybackState>()((set, get) => ({
     const graph = useGraphStore.getState().graph
     // Default to the first node so "just press Play" works.
     const startNodeId = get().startNodeId ?? graph.nodes[0]?.id ?? null
-    const options = startNodeId === null ? {} : { startNodeId }
+    // Algorithms that need a goal default to the LAST node, so "just press Play" works there too.
+    const goalNodeId =
+      get().goalNodeId ?? (algorithm.requirements.goalNode ? (graph.nodes[graph.nodes.length - 1]?.id ?? null) : null)
+    const options = {
+      ...(startNodeId === null ? {} : { startNodeId }),
+      ...(goalNodeId === null ? {} : { goalNodeId }),
+    }
+    const includeCoordinates = algorithm.usesCoordinates === true
 
     const problems = checkRequirements(algorithm, graph, options)
     if (problems.length > 0) {
-      set({ engine: null, isPlaying: false, runSignature: null, problems, startNodeId })
+      set({ engine: null, isPlaying: false, runSignature: null, problems, startNodeId, goalNodeId })
       return
     }
 
     set({
       engine: StepEngine.create(algorithm.run(graph, options)),
       isPlaying: false,
-      runSignature: structureSignature(graph),
+      runSignature: structureSignature(graph, { includeCoordinates }),
       problems: [],
       invalidated: false,
       startNodeId,
+      goalNodeId,
     })
   },
 
@@ -171,11 +187,13 @@ export const usePlaybackStore = create<PlaybackState>()((set, get) => ({
 }))
 
 // A loaded run describes ONE graph. If the graph's structure changes, the run
-// is stale and is dropped (moving or renaming nodes doesn't count).
+// is stale and is dropped. Moving or renaming nodes doesn't count, EXCEPT for
+// algorithms that use node positions (see Algorithm.usesCoordinates).
 useGraphStore.subscribe((state) => {
-  const { runSignature } = usePlaybackStore.getState()
+  const { runSignature, algorithm } = usePlaybackStore.getState()
   if (runSignature === null) return
-  if (structureSignature(state.graph) !== runSignature) {
+  const includeCoordinates = algorithm?.usesCoordinates === true
+  if (structureSignature(state.graph, { includeCoordinates }) !== runSignature) {
     clearTimer()
     usePlaybackStore.setState({ engine: null, isPlaying: false, runSignature: null, invalidated: true })
   }

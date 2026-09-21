@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aStarAlgorithm } from '../algorithms/aStar'
 import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
 import type { Algorithm } from '../engine/algorithm'
@@ -24,7 +25,7 @@ const BFS_EVENT_COUNT = 17
 beforeEach(() => {
   vi.useFakeTimers()
   p().clearRun()
-  usePlaybackStore.setState({ algorithm: null, startNodeId: null, delayMs: 600 })
+  usePlaybackStore.setState({ algorithm: null, startNodeId: null, goalNodeId: null, delayMs: 600 })
   useGraphStore.setState({ graph: createGraph(), connectFromId: null, newEdgeWeight: 1, notice: null })
 })
 
@@ -173,5 +174,45 @@ describe('playback store', () => {
     expect(p().invalidated).toBe(true)
     vi.advanceTimersByTime(10000) // the old timer must be dead
     expect(p().engine).toBeNull()
+  })
+
+  it('goal-based algorithms default the goal to the last node, and changing the goal discards the run', () => {
+    g().setWeighted(true)
+    buildTriangleTree()
+    p().selectAlgorithm(aStarAlgorithm)
+    p().run()
+    expect(p().problems).toEqual([])
+    expect(p().startNodeId).toBe('A')
+    expect(p().goalNodeId).toBe('C')
+    p().setGoalNode('B')
+    expect(p().engine).toBeNull()
+    p().run()
+    expect(p().goalNodeId).toBe('B')
+    p().goToStep(p().engine!.length)
+    const last = p().engine!.currentEvent
+    expect(last?.type === 'finish' && last.result.path).toEqual(['A', 'B'])
+  })
+
+  it('does not invent a goal for algorithms that do not use one', () => {
+    buildTriangleTree()
+    p().selectAlgorithm(bfsAlgorithm)
+    p().run()
+    expect(p().goalNodeId).toBeNull()
+  })
+
+  it('moving a node discards an A* run (its heuristic uses positions) but not a BFS run', () => {
+    g().setWeighted(true)
+    buildTriangleTree()
+    p().selectAlgorithm(aStarAlgorithm)
+    p().run()
+    expect(p().engine).not.toBeNull()
+    g().moveNode('B', 333, 222)
+    expect(p().engine).toBeNull()
+    expect(p().invalidated).toBe(true)
+
+    p().selectAlgorithm(bfsAlgorithm)
+    p().run()
+    g().moveNode('B', 111, 111)
+    expect(p().engine).not.toBeNull()
   })
 })

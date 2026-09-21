@@ -43,4 +43,17 @@ describe('structureSignature', () => {
     // A hidden weight change on an unweighted graph can't affect any algorithm.
     expect(structureSignature(setEdgeWeight(off, 'e1', 9))).toBe(structureSignature(off))
   })
+
+  it('includes node positions only when asked (for algorithms that use coordinates)', () => {
+    const g = base()
+    const moved = moveNode(g, 'A', 500, 500)
+    expect(structureSignature(moved, { includeCoordinates: true })).not.toBe(
+      structureSignature(g, { includeCoordinates: true }),
+    )
+    expect(structureSignature(moved)).toBe(structureSignature(g)) // default: still ignored
+    // labels never matter, even with coordinates
+    expect(structureSignature(renameNode(g, 'A', 'X'), { includeCoordinates: true })).toBe(
+      structureSignature(g, { includeCoordinates: true }),
+    )
+  })
 })

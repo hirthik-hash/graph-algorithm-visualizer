@@ -37,6 +37,11 @@ export interface Algorithm {
   name: string
   category: AlgorithmCategory
   requirements: AlgorithmRequirements
+  /**
+   * true if the result depends on node POSITIONS (A*'s heuristic). Moving a
+   * node then invalidates a loaded run; for every other algorithm it doesn't.
+   */
+  usesCoordinates?: boolean
   run(graph: Graph, options?: AlgorithmOptions): AlgorithmEvent[]
 }
 

@@ -5,6 +5,7 @@
  */
 import type { Algorithm } from '../engine/algorithm'
 import { explainEvent } from '../engine/explain'
+import { aStarAlgorithm } from '../algorithms/aStar'
 import { bellmanFordAlgorithm } from '../algorithms/bellmanFord'
 import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
@@ -22,6 +23,7 @@ const ALGORITHMS: Algorithm[] = [
   dfsAlgorithm,
   dijkstraAlgorithm,
   bellmanFordAlgorithm,
+  aStarAlgorithm,
   floydWarshallAlgorithm,
   primAlgorithm,
   kruskalAlgorithm,
@@ -38,6 +40,7 @@ export default function PlaybackControls() {
 
   const algorithm = usePlaybackStore((s) => s.algorithm)
   const startNodeId = usePlaybackStore((s) => s.startNodeId)
+  const goalNodeId = usePlaybackStore((s) => s.goalNodeId)
   const engine = usePlaybackStore((s) => s.engine)
   const isPlaying = usePlaybackStore((s) => s.isPlaying)
   const delayMs = usePlaybackStore((s) => s.delayMs)
@@ -46,6 +49,7 @@ export default function PlaybackControls() {
 
   const selectAlgorithm = usePlaybackStore((s) => s.selectAlgorithm)
   const setStartNode = usePlaybackStore((s) => s.setStartNode)
+  const setGoalNode = usePlaybackStore((s) => s.setGoalNode)
   const play = usePlaybackStore((s) => s.play)
   const pause = usePlaybackStore((s) => s.pause)
   const stepForward = usePlaybackStore((s) => s.stepForward)
@@ -58,6 +62,8 @@ export default function PlaybackControls() {
 
   const canRun = algorithm !== null
   const startValue = graph.nodes.some((n) => n.id === startNodeId) ? (startNodeId ?? '') : ''
+  const goalValue = graph.nodes.some((n) => n.id === goalNodeId) ? (goalNodeId ?? '') : ''
+  const needsGoal = algorithm?.requirements.goalNode === true
 
   return (
     <section className="panel playback">
@@ -89,6 +95,21 @@ export default function PlaybackControls() {
             </option>
           ))}
         </select>
+
+        {needsGoal && (
+          <select
+            aria-label="Goal node"
+            value={goalValue}
+            onChange={(e) => setGoalNode(e.target.value === '' ? null : e.target.value)}
+          >
+            <option value="">Goal: last node</option>
+            {graph.nodes.map((n) => (
+              <option key={n.id} value={n.id}>
+                {`Goal: ${n.label ?? n.id}`}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {problems.length > 0 && (

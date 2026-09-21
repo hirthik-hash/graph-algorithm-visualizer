@@ -3,17 +3,18 @@
  * result: node ids, edge ids/endpoints, directed/weighted, and weights (only
  * while the graph is weighted, since hidden weights are ignored).
  *
- * It deliberately IGNORES node positions and labels. Dragging a node or
- * renaming it must not throw away a loaded run. (An algorithm that uses
- * coordinates, like A*, will need a coordinate-aware variant when it arrives.)
+ * By default it IGNORES node positions and labels: dragging a node or renaming
+ * it must not throw away a loaded run. An algorithm whose result depends on
+ * positions (A*, via its heuristic) asks for `includeCoordinates`, so moving a
+ * node correctly invalidates ITS run.
  */
 import type { Graph } from './graph'
 
-export function structureSignature(graph: Graph): string {
+export function structureSignature(graph: Graph, options: { includeCoordinates?: boolean } = {}): string {
   return JSON.stringify([
     graph.directed,
     graph.weighted,
-    graph.nodes.map((n) => n.id),
+    graph.nodes.map((n) => (options.includeCoordinates ? [n.id, n.x ?? null, n.y ?? null] : n.id)),
     graph.edges.map((e) => [e.id, e.source, e.target, graph.weighted ? (e.weight ?? null) : null]),
   ])
 }
