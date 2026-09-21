@@ -2,6 +2,7 @@ import './App.css'
 import AnalysisPanel from './ui/AnalysisPanel'
 import GraphCanvas from './ui/GraphCanvas'
 import GraphControls from './ui/GraphControls'
+import PlaybackControls from './ui/PlaybackControls'
 import RepresentationPanels from './ui/RepresentationPanels'
 import { useGraphStore } from './ui/graphStore'
 
@@ -31,6 +32,7 @@ export default function App() {
             Click empty space to add a node · drag a node to move it · click a node, then another, to connect them ·
             click a node twice quickly to delete it · {nodeCount} nodes, {edgeCount} edges
           </p>
+          <PlaybackControls />
         </div>
         <GraphControls />
       </div>

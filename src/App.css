@@ -236,3 +236,85 @@ body {
   font-size: 14px;
   line-height: 1.6;
 }
+
+/* ---- Day 6: playback + algorithm highlighting ---- */
+:root {
+  --active: #f97316;
+  --visited-fill: #d1fae5;
+  --visited-stroke: #059669;
+  --frontier: #eab308;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --active: #fb923c;
+    --visited-fill: #0f3a2c;
+    --visited-stroke: #34d399;
+    --frontier: #facc15;
+  }
+}
+
+.node--visited circle {
+  fill: var(--visited-fill);
+  stroke: var(--visited-stroke);
+}
+.node--frontier circle {
+  stroke: var(--frontier);
+  stroke-width: 4;
+  stroke-dasharray: 6 3;
+}
+.node--active circle {
+  fill: var(--active);
+  stroke: var(--active);
+}
+.node--active text {
+  fill: #ffffff;
+}
+.edge--examined {
+  stroke: var(--active);
+  stroke-width: 4;
+}
+
+.playback {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.playback .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.playback input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+}
+.playback .notice ul {
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.event-log {
+  margin: 0;
+  padding: 0 0 0 28px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.event-log li {
+  color: var(--muted);
+}
+.event-log li.done {
+  color: var(--text);
+}
+.event-log li.current {
+  color: var(--text);
+  font-weight: 700;
+  background: var(--node-fill);
+}

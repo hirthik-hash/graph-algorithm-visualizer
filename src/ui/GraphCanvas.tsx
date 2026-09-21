@@ -12,9 +12,11 @@
  * pointer capture for dragging, and browsers retarget click events to the
  * capturing element, which would make click-based gestures unreliable.
  */
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
+import { computeHighlights } from '../engine/highlights'
 import { useGraphStore } from './graphStore'
+import { usePlaybackStore } from './playbackStore'
 import type { GraphEdge, GraphNode } from '../model/graph'
 
 const WIDTH = 800
@@ -62,6 +64,21 @@ export default function GraphCanvas() {
   const moveNode = useGraphStore((s) => s.moveNode)
   const clickNode = useGraphStore((s) => s.clickNode)
   const removeNodeById = useGraphStore((s) => s.removeNodeById)
+
+  // Highlighting is derived from the loaded algorithm run (if any); the canvas
+  // never needs to know which algorithm produced the events.
+  const engine = usePlaybackStore((s) => s.engine)
+  const highlights = useMemo(() => computeHighlights(engine?.eventsSoFar ?? []), [engine])
+  const edgeClass = (edgeId: string) =>
+    edgeId === highlights.examinedEdgeId ? 'edge edge--examined' : 'edge'
+  const nodeClass = (nodeId: string) => {
+    const classes = ['node']
+    if (nodeId === connectFromId) classes.push('node--source')
+    if (nodeId === highlights.active) classes.push('node--active')
+    else if (highlights.visited.has(nodeId)) classes.push('node--visited')
+    else if (highlights.frontier.has(nodeId)) classes.push('node--frontier')
+    return classes.join(' ')
+  }
 
   const svgRef = useRef<SVGSVGElement>(null)
   const drag = useRef<DragState | null>(null)
@@ -167,7 +184,7 @@ export default function GraphCanvas() {
           const d = `M ${x - 8} ${y - RADIUS} C ${x - 34} ${y - RADIUS - 44}, ${x + 34} ${y - RADIUS - 44}, ${x + 8} ${y - RADIUS}`
           return (
             <g key={edge.id}>
-              <path d={d} className="edge" fill="none" markerEnd={graph.directed ? 'url(#arrowhead)' : undefined} />
+              <path d={d} className={edgeClass(edge.id)} fill="none" markerEnd={graph.directed ? 'url(#arrowhead)' : undefined} />
               {graph.weighted && (
                 <text x={x} y={y - RADIUS - 38} className="edge-label" textAnchor="middle">
                   {edge.weight}
@@ -185,7 +202,7 @@ export default function GraphCanvas() {
               y1={g.startY}
               x2={g.endX}
               y2={g.endY}
-              className="edge"
+              className={edgeClass(edge.id)}
               markerEnd={graph.directed ? 'url(#arrowhead)' : undefined}
             />
             {graph.weighted && (
@@ -200,7 +217,7 @@ export default function GraphCanvas() {
       {graph.nodes.map((node) => (
         <g
           key={node.id}
-          className={node.id === connectFromId ? 'node node--source' : 'node'}
+          className={nodeClass(node.id)}
           onPointerDown={(e) => onNodePointerDown(e, node.id)}
         >
           <circle cx={node.x ?? 0} cy={node.y ?? 0} r={RADIUS} />
