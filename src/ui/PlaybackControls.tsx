@@ -4,26 +4,18 @@
  * list later (plugin architecture day).
  */
 import type { Algorithm } from '../engine/algorithm'
-import type { AlgorithmEvent } from '../engine/events'
+import { explainEvent } from '../engine/explain'
 import { bfsAlgorithm } from '../algorithms/bfs'
 import { dfsAlgorithm } from '../algorithms/dfs'
+import { dijkstraAlgorithm } from '../algorithms/dijkstra'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
-const ALGORITHMS: Algorithm[] = [bfsAlgorithm, dfsAlgorithm]
+const ALGORITHMS: Algorithm[] = [bfsAlgorithm, dfsAlgorithm, dijkstraAlgorithm]
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */
 const delayToSpeed = (delayMs: number) => Math.min(10, Math.max(1, Math.round(1200 / delayMs)))
 const speedToDelay = (speed: number) => Math.round(1200 / speed)
-
-/** Placeholder text for the event log; a readable explainer replaces this later. */
-function rawLabel(event: AlgorithmEvent): string {
-  const { type, ...fields } = event
-  const details = Object.entries(fields)
-    .map(([key, value]) => `${key}=${typeof value === 'object' ? JSON.stringify(value) : String(value)}`)
-    .join(' ')
-  return `${type} ${details}`
-}
 
 export default function PlaybackControls() {
   const graph = useGraphStore((s) => s.graph)
@@ -45,6 +37,8 @@ export default function PlaybackControls() {
   const reset = usePlaybackStore((s) => s.reset)
   const goToStep = usePlaybackStore((s) => s.goToStep)
   const setDelayMs = usePlaybackStore((s) => s.setDelayMs)
+
+  const labelOf = (id: string) => graph.nodes.find((n) => n.id === id)?.label ?? id
 
   const canRun = algorithm !== null
   const startValue = graph.nodes.some((n) => n.id === startNodeId) ? (startNodeId ?? '') : ''
@@ -142,6 +136,12 @@ export default function PlaybackControls() {
             />
           </label>
 
+          <p className="step-explanation" aria-live="polite">
+            {engine.currentEvent === null
+              ? 'Press Step or Play to begin.'
+              : explainEvent(engine.currentEvent, labelOf)}
+          </p>
+
           <ol className="event-log" aria-label="Events">
             {engine.events.map((event, i) => (
               <li
@@ -149,7 +149,7 @@ export default function PlaybackControls() {
                 className={i === engine.position - 1 ? 'current' : i < engine.position ? 'done' : ''}
                 aria-current={i === engine.position - 1 ? 'step' : undefined}
               >
-                {rawLabel(event)}
+                {explainEvent(event, labelOf)}
               </li>
             ))}
           </ol>

@@ -224,6 +224,11 @@ export default function GraphCanvas() {
           <text x={node.x ?? 0} y={node.y ?? 0} textAnchor="middle" dominantBaseline="central">
             {node.label ?? node.id}
           </text>
+          {highlights.distances.has(node.id) && (
+            <text x={node.x ?? 0} y={(node.y ?? 0) + RADIUS + 15} textAnchor="middle" className="node-distance">
+              {`d=${highlights.distances.get(node.id)}`}
+            </text>
+          )}
         </g>
       ))}
     </svg>

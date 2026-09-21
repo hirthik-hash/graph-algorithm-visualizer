@@ -1,5 +1,5 @@
 /**
- * Highlights (Day 6): what the canvas should emphasise after N events.
+ * Highlights: what the canvas should emphasise after N events.
  *
  * Derived purely by folding over the events applied so far, never by asking
  * "which algorithm is this". Any algorithm that emits the standard events gets
@@ -10,6 +10,7 @@
  *  - active:   the node being processed right now. Tracked as a path so that
  *              after a DFS child finishes, the parent becomes active again.
  *  - examinedEdgeId: the edge from the LATEST event, if that event examined one
+ *  - distances: each node's latest known distance (Day 7); unreached nodes are absent
  */
 import type { AlgorithmEvent } from './events'
 
@@ -18,11 +19,13 @@ export interface Highlights {
   frontier: Set<string>
   active: string | null
   examinedEdgeId: string | null
+  distances: Map<string, number>
 }
 
 export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highlights {
   const visited = new Set<string>()
   const frontier = new Set<string>()
+  const distances = new Map<string, number>()
   const activePath: string[] = []
 
   for (const event of eventsSoFar) {
@@ -42,8 +45,11 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
         if (i >= 0) activePath.splice(i, 1)
         break
       }
+      case 'update_distance':
+        distances.set(event.nodeId, event.distance)
+        break
       default:
-        break // relax_edge, update_distance, finish, ... don't change node state
+        break // relax_edge, finish, ... don't change node state
     }
   }
 
@@ -53,5 +59,6 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
     frontier,
     active: activePath.length > 0 ? activePath[activePath.length - 1] : null,
     examinedEdgeId: last?.type === 'relax_edge' ? last.edgeId : null,
+    distances,
   }
 }

@@ -60,4 +60,25 @@ describe('computeHighlights', () => {
       expect(h.active).toBeNull()
     }
   })
+
+  it('tracks the latest known distance per node (Day 7)', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'update_distance', nodeId: 'A', distance: 0, previousDistance: null },
+      { type: 'update_distance', nodeId: 'B', distance: 9, previousDistance: null, viaNodeId: 'A' },
+      { type: 'update_distance', nodeId: 'B', distance: 4, previousDistance: 9, viaNodeId: 'C' },
+    ]
+    const d = computeHighlights(events).distances
+    expect(d.get('A')).toBe(0)
+    expect(d.get('B')).toBe(4) // the later update wins
+    expect(d.has('C')).toBe(false) // never reached: absent, not Infinity
+  })
+
+  it('shows earlier distances again when you step backwards (it is recomputed from the prefix)', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'update_distance', nodeId: 'B', distance: 9, previousDistance: null },
+      { type: 'update_distance', nodeId: 'B', distance: 4, previousDistance: 9 },
+    ]
+    expect(computeHighlights(events.slice(0, 1)).distances.get('B')).toBe(9)
+    expect(computeHighlights(events.slice(0, 0)).distances.has('B')).toBe(false)
+  })
 })

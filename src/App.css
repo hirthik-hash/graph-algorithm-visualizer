@@ -318,3 +318,24 @@ body {
   font-weight: 700;
   background: var(--node-fill);
 }
+
+/* ---- Day 7: distances + step explanation ---- */
+.node .node-distance {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.step-explanation {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--active);
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 14px;
+  min-height: 1.4em;
+}
+.event-log {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
