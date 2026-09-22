@@ -123,4 +123,15 @@ describe('graph store', () => {
     expect(s().graph.directed).toBe(true)
     expect(s().graph.weighted).toBe(true)
   })
+
+  it('replaceGraph swaps in a whole graph and clears any pending connection and notice', () => {
+    threeNodes()
+    s().clickNode('A') // pending source
+    useGraphStore.setState({ notice: 'old message' })
+    const replacement = { ...createGraph({ directed: true }), nodes: [{ id: 'Q' }] }
+    s().replaceGraph(replacement)
+    expect(s().graph).toBe(replacement)
+    expect(s().connectFromId).toBeNull()
+    expect(s().notice).toBeNull()
+  })
 })

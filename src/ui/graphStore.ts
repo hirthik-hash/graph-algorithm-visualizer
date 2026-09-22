@@ -44,6 +44,8 @@ interface GraphState {
   setDirected: (directed: boolean) => void
   setWeighted: (weighted: boolean) => void
   setNewEdgeWeight: (weight: number) => void
+  /** Swap in a whole new graph (e.g. from the generator). */
+  replaceGraph: (graph: Graph) => void
   clearGraph: () => void
   dismissNotice: () => void
 }
@@ -136,6 +138,8 @@ export const useGraphStore = create<GraphState>()((set, get) => ({
   setNewEdgeWeight: (weight) => {
     if (Number.isFinite(weight)) set({ newEdgeWeight: weight })
   },
+
+  replaceGraph: (graph) => set({ graph, connectFromId: null, notice: null }),
 
   // Keeps the directed/weighted settings: "clear" means "remove the drawing",
   // not "forget how I configured the graph".

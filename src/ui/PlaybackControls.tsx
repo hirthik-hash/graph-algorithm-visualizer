@@ -1,35 +1,12 @@
 /**
  * Algorithm picker + playback controls + event log (Day 6).
- * Algorithms are listed here explicitly for now; a registry replaces this
- * list later (plugin architecture day).
+ * The algorithm list comes from the registry.
  */
-import type { Algorithm } from '../engine/algorithm'
 import { explainEvent } from '../engine/explain'
-import { aStarAlgorithm } from '../algorithms/aStar'
-import { bellmanFordAlgorithm } from '../algorithms/bellmanFord'
-import { bfsAlgorithm } from '../algorithms/bfs'
-import { dfsAlgorithm } from '../algorithms/dfs'
-import { dfsTopoSortAlgorithm } from '../algorithms/dfsTopoSort'
-import { dijkstraAlgorithm } from '../algorithms/dijkstra'
-import { floydWarshallAlgorithm } from '../algorithms/floydWarshall'
-import { kahnsTopoSortAlgorithm } from '../algorithms/kahnsTopoSort'
-import { kruskalAlgorithm } from '../algorithms/kruskal'
-import { primAlgorithm } from '../algorithms/prim'
+import { ALGORITHM_REGISTRY } from '../algorithms/registry'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
-const ALGORITHMS: Algorithm[] = [
-  bfsAlgorithm,
-  dfsAlgorithm,
-  dijkstraAlgorithm,
-  bellmanFordAlgorithm,
-  aStarAlgorithm,
-  floydWarshallAlgorithm,
-  primAlgorithm,
-  kruskalAlgorithm,
-  kahnsTopoSortAlgorithm,
-  dfsTopoSortAlgorithm,
-]
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */
 const delayToSpeed = (delayMs: number) => Math.min(10, Math.max(1, Math.round(1200 / delayMs)))
@@ -73,10 +50,10 @@ export default function PlaybackControls() {
         <select
           aria-label="Algorithm"
           value={algorithm?.id ?? ''}
-          onChange={(e) => selectAlgorithm(ALGORITHMS.find((a) => a.id === e.target.value) ?? null)}
+          onChange={(e) => selectAlgorithm(ALGORITHM_REGISTRY.find((a) => a.id === e.target.value) ?? null)}
         >
           <option value="">Choose an algorithm…</option>
-          {ALGORITHMS.map((a) => (
+          {ALGORITHM_REGISTRY.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}
             </option>

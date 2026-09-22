@@ -411,3 +411,33 @@ body {
   stroke-width: 3;
   stroke-dasharray: 8 5;
 }
+
+/* ---- Day 12: generator + comparison ---- */
+.generator {
+  margin-top: 16px;
+}
+.generator .row {
+  align-items: center;
+}
+.generator input[type='number'] {
+  width: 70px;
+}
+.comparison {
+  margin-top: 16px;
+}
+.row-not-run {
+  color: var(--muted);
+}
+.not-run-reasons {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.compare-pair {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.compare-pair .row {
+  align-items: center;
+}

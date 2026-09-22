@@ -1,9 +1,11 @@
 import './App.css'
 import AnalysisPanel from './ui/AnalysisPanel'
 import GraphCanvas from './ui/GraphCanvas'
+import ComparisonPanel from './ui/ComparisonPanel'
 import FloydWarshallView from './ui/FloydWarshallView'
 import GraphControls from './ui/GraphControls'
 import PlaybackControls from './ui/PlaybackControls'
+import GeneratorPanel from './ui/GeneratorPanel'
 import RepresentationPanels from './ui/RepresentationPanels'
 import UnionFindDemo from './ui/UnionFindDemo'
 import { useGraphStore } from './ui/graphStore'
@@ -43,6 +45,10 @@ export default function App() {
       <AnalysisPanel />
 
       <RepresentationPanels />
+
+      <GeneratorPanel />
+
+      <ComparisonPanel />
 
       <UnionFindDemo />
     </main>
