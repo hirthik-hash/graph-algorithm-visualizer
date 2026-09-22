@@ -3,7 +3,7 @@ import { ALGORITHM_REGISTRY, getAlgorithmById } from './registry'
 
 describe('algorithm registry', () => {
   it('lists every algorithm built so far, each with a unique id', () => {
-    expect(ALGORITHM_REGISTRY.length).toBeGreaterThanOrEqual(10)
+    expect(ALGORITHM_REGISTRY.length).toBeGreaterThanOrEqual(11) // 10 real algorithms + the Day 15 plugin-architecture proof
     const ids = ALGORITHM_REGISTRY.map((a) => a.id)
     expect(new Set(ids).size).toBe(ids.length)
   })

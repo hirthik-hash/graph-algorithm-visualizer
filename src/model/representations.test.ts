@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { addEdge, addNode, createGraph } from './graph'
 import type { Graph } from './graph'
 import { toAdjacencyList, toAdjacencyMatrix, toEdgeList } from './representations'
+import { parallelEdgesGraph } from '../test/fixtures'
 
 function build(
   options: { directed?: boolean; weighted?: boolean },
@@ -49,15 +50,12 @@ describe('toAdjacencyMatrix', () => {
   })
 
   it('keeps the CHEAPEST parallel edge regardless of insertion order', () => {
-    const cheapLast = build({ directed: true, weighted: true }, ['A', 'B'], [
-      ['e1', 'A', 'B', 9],
-      ['e2', 'A', 'B', 2],
-    ])
+    // Shared fixture: A -> B twice, weights 9 then 2 — see src/test/fixtures.ts.
+    expect(toAdjacencyMatrix(parallelEdgesGraph()).cells[0][1]).toBe(2)
     const cheapFirst = build({ directed: true, weighted: true }, ['A', 'B'], [
       ['e1', 'A', 'B', 2],
       ['e2', 'A', 'B', 9],
     ])
-    expect(toAdjacencyMatrix(cheapLast).cells[0][1]).toBe(2)
     expect(toAdjacencyMatrix(cheapFirst).cells[0][1]).toBe(2)
   })
 
