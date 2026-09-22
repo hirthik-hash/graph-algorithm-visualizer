@@ -1,6 +1,7 @@
 import './App.css'
 import AnalysisPanel from './ui/AnalysisPanel'
 import GraphCanvas from './ui/GraphCanvas'
+import CodeSyncPanel from './ui/CodeSyncPanel'
 import ComparisonPanel from './ui/ComparisonPanel'
 import FloydWarshallView from './ui/FloydWarshallView'
 import GraphControls from './ui/GraphControls'
@@ -38,6 +39,7 @@ export default function App() {
           </p>
           <PlaybackControls />
           <FloydWarshallView />
+          <CodeSyncPanel />
         </div>
         <GraphControls />
       </div>

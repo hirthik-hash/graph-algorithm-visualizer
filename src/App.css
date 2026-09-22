@@ -441,3 +441,36 @@ body {
 .compare-pair .row {
   align-items: center;
 }
+
+/* ---- Day 13: code-graph sync ---- */
+.code-sync {
+  margin-top: 16px;
+}
+.pseudocode {
+  margin: 0;
+  padding: 8px 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.pc-line {
+  display: flex;
+  gap: 12px;
+  padding: 1px 12px;
+  white-space: pre;
+  border-radius: 4px;
+}
+.pc-line-number {
+  color: var(--muted);
+  min-width: 1.5em;
+  text-align: right;
+  user-select: none;
+}
+.pc-active {
+  background: var(--node-fill);
+  font-weight: 700;
+}
+.pc-active .pc-line-number {
+  color: var(--accent);
+}
