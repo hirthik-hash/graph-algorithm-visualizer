@@ -16,6 +16,7 @@
  * Nodes get positions on a circle, so a generated graph renders immediately
  * and A* has real coordinates.
  */
+import { makeRandom } from '../engine/random'
 import type { Graph, GraphEdge, GraphNode } from './graph'
 import { SCHEMA_VERSION } from './graph'
 
@@ -51,18 +52,6 @@ const LAYOUT_RADIUS = 210
 /** Same sequence as the editor: A..Z, then N26, N27, ... */
 export function nodeIdForIndex(i: number): string {
   return i < 26 ? String.fromCharCode(65 + i) : `N${i}`
-}
-
-/** mulberry32: a tiny, well-distributed seeded random number generator. */
-function makeRandom(seed: number): () => number {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
 }
 
 export function generateGraph(options: GeneratorOptions): Graph {

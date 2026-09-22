@@ -7,6 +7,7 @@ import FloydWarshallView from './ui/FloydWarshallView'
 import GraphControls from './ui/GraphControls'
 import PlaybackControls from './ui/PlaybackControls'
 import GeneratorPanel from './ui/GeneratorPanel'
+import QuizPanel from './ui/QuizPanel'
 import RepresentationPanels from './ui/RepresentationPanels'
 import UnionFindDemo from './ui/UnionFindDemo'
 import { useGraphStore } from './ui/graphStore'
@@ -51,6 +52,8 @@ export default function App() {
       <GeneratorPanel />
 
       <ComparisonPanel />
+
+      <QuizPanel />
 
       <UnionFindDemo />
     </main>
