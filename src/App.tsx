@@ -7,6 +7,7 @@ import FloydWarshallView from './ui/FloydWarshallView'
 import GraphControls from './ui/GraphControls'
 import PlaybackControls from './ui/PlaybackControls'
 import GeneratorPanel from './ui/GeneratorPanel'
+import ImportExportPanel from './ui/ImportExportPanel'
 import QuizPanel from './ui/QuizPanel'
 import RepresentationPanels from './ui/RepresentationPanels'
 import UnionFindDemo from './ui/UnionFindDemo'
@@ -50,6 +51,8 @@ export default function App() {
       <RepresentationPanels />
 
       <GeneratorPanel />
+
+      <ImportExportPanel />
 
       <ComparisonPanel />
 

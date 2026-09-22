@@ -523,3 +523,39 @@ body {
   color: var(--muted);
   margin: 0 0 12px;
 }
+
+/* ---- Day 16: import / export ---- */
+.import-export {
+  margin-top: 16px;
+}
+.ie-column {
+  margin-top: 12px;
+}
+.ie-column:first-of-type {
+  margin-top: 0;
+}
+.ie-column h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+.ie-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
