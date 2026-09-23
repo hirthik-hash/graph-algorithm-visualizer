@@ -8,6 +8,8 @@ import GraphControls from './ui/GraphControls'
 import PlaybackControls from './ui/PlaybackControls'
 import GeneratorPanel from './ui/GeneratorPanel'
 import ImportExportPanel from './ui/ImportExportPanel'
+import ShareLinkPanel from './ui/ShareLinkPanel'
+import TraceExportPanel from './ui/TraceExportPanel'
 import QuizPanel from './ui/QuizPanel'
 import RepresentationPanels from './ui/RepresentationPanels'
 import UnionFindDemo from './ui/UnionFindDemo'
@@ -53,6 +55,10 @@ export default function App() {
       <GeneratorPanel />
 
       <ImportExportPanel />
+
+      <ShareLinkPanel />
+
+      <TraceExportPanel />
 
       <ComparisonPanel />
 

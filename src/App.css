@@ -559,3 +559,12 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
+
+/* ---- Day 17: share link + trace/image export ---- */
+.share-link,
+.trace-export {
+  margin-top: 16px;
+}
+.trace-export .row {
+  gap: 8px;
+}

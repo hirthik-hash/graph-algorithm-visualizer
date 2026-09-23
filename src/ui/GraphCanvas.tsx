@@ -151,6 +151,7 @@ export default function GraphCanvas() {
   return (
     <svg
       ref={svgRef}
+      id="graph-canvas-svg"
       className="canvas"
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
