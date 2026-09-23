@@ -2,8 +2,10 @@
  * Algorithm picker + playback controls + event log (Day 6).
  * The algorithm list comes from the registry.
  */
+import { useEffect } from 'react'
 import { explainEvent } from '../engine/explain'
 import { ALGORITHM_REGISTRY } from '../algorithms/registry'
+import { isEditableTarget, resolvePlaybackShortcut } from './keyboardShortcuts'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
@@ -41,6 +43,41 @@ export default function PlaybackControls() {
   const startValue = graph.nodes.some((n) => n.id === startNodeId) ? (startNodeId ?? '') : ''
   const goalValue = graph.nodes.some((n) => n.id === goalNodeId) ? (goalNodeId ?? '') : ''
   const needsGoal = algorithm?.requirements.goalNode === true
+
+  // Keyboard step-through (Day 18): ← / → step, Space plays/pauses, Home
+  // resets, End jumps to the end. Ignored while typing in a form field, and
+  // never active if no algorithm has been chosen yet.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.ctrlKey || event.altKey || event.metaKey) return
+      const target = event.target as HTMLElement | null
+      if (isEditableTarget(target?.tagName, target?.isContentEditable)) return
+      const shortcut = resolvePlaybackShortcut(event.key)
+      if (shortcut === null || !canRun) return
+
+      event.preventDefault()
+      switch (shortcut) {
+        case 'stepForward':
+          stepForward()
+          break
+        case 'stepBack':
+          stepBack()
+          break
+        case 'playPause':
+          if (isPlaying) pause()
+          else play()
+          break
+        case 'reset':
+          reset()
+          break
+        case 'goToEnd':
+          if (engine) goToStep(engine.length)
+          break
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [canRun, isPlaying, engine, play, pause, stepForward, stepBack, reset, goToStep])
 
   return (
     <section className="panel playback">
@@ -124,6 +161,10 @@ export default function PlaybackControls() {
           Reset
         </button>
       </div>
+
+      {canRun && (
+        <p className="hint">Keyboard: ← / → to step, Space to play/pause, Home to reset, End to jump to the end.</p>
+      )}
 
       <label className="row">
         Speed

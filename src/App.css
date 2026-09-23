@@ -568,3 +568,64 @@ body {
 .trace-export .row {
   gap: 8px;
 }
+
+/* ---- Day 18: accessibility + mobile pass ---- */
+
+/* Visible, consistent focus ring for keyboard users, on every interactive
+   element we ship (buttons, selects, inputs, canvas nodes). Browsers vary a
+   lot in their default focus styling; this makes it predictable and visible
+   against both light and dark backgrounds. */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+.node:focus-visible circle {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Comfortable tap targets on touch devices (44px is the common accessibility
+   guideline minimum), without changing the compact look on desktop. */
+@media (pointer: coarse) {
+  button,
+  select,
+  input[type='checkbox'],
+  input[type='number'],
+  input[type='text'] {
+    min-height: 44px;
+  }
+  input[type='checkbox'] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* Respect a person's reduced-motion setting: nothing in this app relies on
+   motion to convey information, so it's safe to turn transitions off. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Small screens: stack the toolbar rows instead of letting them overflow,
+   and keep every table/pre scrollable within its own panel rather than
+   widening the page. */
+@media (max-width: 480px) {
+  .app {
+    padding: 12px 12px 24px;
+  }
+  .controls .row,
+  .playback .row,
+  .generator .row,
+  .comparison .row,
+  .ie-column .row,
+  .trace-export .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quiz-options {
+    gap: 8px;
+  }
+}
