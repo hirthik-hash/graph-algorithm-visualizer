@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Add an algorithm yourself
+    url: https://github.com/OWNER/REPO/blob/main/docs/adding-an-algorithm.md
+    about: Full walkthrough for implementing and registering a new algorithm.
