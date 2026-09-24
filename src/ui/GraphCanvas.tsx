@@ -1,5 +1,5 @@
 /**
- * Raw SVG canvas (Day 2).
+ * Raw SVG canvas (Day 2; inline weight editing added Day 20).
  *
  * It renders graph.nodes / graph.edges straight from the store: there is no
  * second graph representation. Gestures:
@@ -7,13 +7,14 @@
  *   - drag a node .............. move it
  *   - click node, then another . connect them (click the same node again to cancel)
  *   - click a node twice fast .. delete it
+ *   - click a weight label ..... edit that edge's weight in place
  *
  * Everything is built on pointer events (not click/dblclick) because we use
  * pointer capture for dragging, and browsers retarget click events to the
  * capturing element, which would make click-based gestures unreliable.
  */
-import { useMemo, useRef } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { computeHighlights } from '../engine/highlights'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
@@ -32,6 +33,95 @@ interface DragState {
   startClientX: number
   startClientY: number
   moved: boolean
+}
+
+/**
+ * A weight label that becomes an inline editor on click/Enter, for the edge
+ * whose id matches `editingEdgeId`. Kept as one component so the normal-edge
+ * and self-loop branches below share the exact same edit behavior.
+ *
+ * Commit rule (the "least surprising" choice, documented here since the spec
+ * for this feature left it open): Enter commits, Escape cancels and restores
+ * the old value, and clicking/tabbing away COMMITS if the typed value is a
+ * valid number, or silently reverts if it isn't. An invalid value therefore
+ * never reaches the graph — commitOrCancel falls back to canceling rather
+ * than ever calling setEdgeWeight with something invalid.
+ */
+function WeightLabel({
+  edge,
+  x,
+  y,
+  isEditing,
+  onStartEditing,
+  onCommit,
+  onCancel,
+}: {
+  edge: GraphEdge
+  x: number
+  y: number
+  isEditing: boolean
+  onStartEditing: () => void
+  onCommit: (value: string) => void
+  onCancel: () => void
+}) {
+  const [draft, setDraft] = useState(String(edge.weight ?? ''))
+
+  useEffect(() => {
+    if (isEditing) setDraft(String(edge.weight ?? ''))
+  }, [isEditing, edge.weight])
+
+  if (isEditing) {
+    return (
+      <foreignObject x={x - 28} y={y - 12} width={56} height={24} className="weight-editor-host">
+        <input
+          type="number"
+          className="weight-editor"
+          value={draft}
+          autoFocus
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={() => onCommit(draft)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              onCommit(draft)
+            } else if (e.key === 'Escape') {
+              e.preventDefault()
+              onCancel()
+            }
+            e.stopPropagation() // don't let arrow keys reach the playback shortcuts while typing
+          }}
+          aria-label={`Weight of edge ${edge.id}`}
+        />
+      </foreignObject>
+    )
+  }
+
+  const openEditor = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation() // don't let this reach the SVG background (which would add a node)
+    onStartEditing()
+  }
+
+  return (
+    <g
+      className="weight-hit"
+      tabIndex={0}
+      role="button"
+      aria-label={`Edit weight of edge ${edge.id}, currently ${edge.weight}`}
+      onPointerDown={openEditor}
+      onClick={openEditor}
+      onKeyDown={(e: ReactKeyboardEvent<SVGGElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onStartEditing()
+        }
+      }}
+    >
+      <rect x={x - 16} y={y - 10} width={32} height={20} className="weight-hit-area" />
+      <text x={x} y={y} textAnchor="middle" dominantBaseline="middle" className="edge-label">
+        {edge.weight}
+      </text>
+    </g>
+  )
 }
 
 function edgeGeometry(edge: GraphEdge, from: GraphNode, to: GraphNode) {
@@ -64,6 +154,30 @@ export default function GraphCanvas() {
   const moveNode = useGraphStore((s) => s.moveNode)
   const clickNode = useGraphStore((s) => s.clickNode)
   const removeNodeById = useGraphStore((s) => s.removeNodeById)
+  const setEdgeWeight = useGraphStore((s) => s.setEdgeWeight)
+
+  // Which edge's weight label is currently an inline editor, if any. This is
+  // transient UI state, not graph data, so it lives here rather than in the
+  // graph store (the same pattern as `drag`/`lastTap` below).
+  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null)
+
+  // If the edge being edited is deleted out from under the editor (e.g. its
+  // node was removed), drop out of edit mode rather than pointing at nothing.
+  useEffect(() => {
+    if (editingEdgeId !== null && !graph.edges.some((e) => e.id === editingEdgeId)) {
+      setEditingEdgeId(null)
+    }
+  }, [graph.edges, editingEdgeId])
+
+  const commitWeightEdit = (edgeId: string, raw: string) => {
+    const value = Number(raw)
+    if (raw.trim() !== '' && Number.isFinite(value)) {
+      setEdgeWeight(edgeId, value)
+    }
+    // An invalid or empty value is silently discarded — the edge keeps its
+    // previous weight, and nothing invalid ever reaches the graph.
+    setEditingEdgeId(null)
+  }
 
   // Highlighting is derived from the loaded algorithm run (if any); the canvas
   // never needs to know which algorithm produced the events.
@@ -191,9 +305,15 @@ export default function GraphCanvas() {
             <g key={edge.id}>
               <path d={d} className={edgeClass(edge.id)} fill="none" markerEnd={graph.directed ? 'url(#arrowhead)' : undefined} />
               {graph.weighted && (
-                <text x={x} y={y - RADIUS - 38} className="edge-label" textAnchor="middle">
-                  {edge.weight}
-                </text>
+                <WeightLabel
+                  edge={edge}
+                  x={x}
+                  y={y - RADIUS - 38}
+                  isEditing={editingEdgeId === edge.id}
+                  onStartEditing={() => setEditingEdgeId(edge.id)}
+                  onCommit={(value) => commitWeightEdit(edge.id, value)}
+                  onCancel={() => setEditingEdgeId(null)}
+                />
               )}
             </g>
           )
@@ -211,9 +331,15 @@ export default function GraphCanvas() {
               markerEnd={graph.directed ? 'url(#arrowhead)' : undefined}
             />
             {graph.weighted && (
-              <text x={g.labelX} y={g.labelY} className="edge-label" textAnchor="middle" dominantBaseline="middle">
-                {edge.weight}
-              </text>
+              <WeightLabel
+                edge={edge}
+                x={g.labelX}
+                y={g.labelY}
+                isEditing={editingEdgeId === edge.id}
+                onStartEditing={() => setEditingEdgeId(edge.id)}
+                onCommit={(value) => commitWeightEdit(edge.id, value)}
+                onCancel={() => setEditingEdgeId(null)}
+              />
             )}
           </g>
         )
