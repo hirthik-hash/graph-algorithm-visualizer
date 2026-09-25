@@ -18,14 +18,31 @@ const SHAPE_LABEL: Record<GraphShape, string> = {
   tree: 'Tree',
 }
 
+const DEFAULT_NODE_COUNT = 12
+
+/** Clamps to a valid node count; a blank or non-numeric field falls back to the default rather than 1, so blurring a cleared field doesn't silently snap to the smallest possible graph. */
+function clampNodeCount(raw: string): number {
+  const parsed = Math.floor(Number(raw))
+  if (!Number.isFinite(parsed) || raw.trim() === '') return DEFAULT_NODE_COUNT
+  return Math.max(1, Math.min(MAX_GENERATED_NODES, parsed))
+}
+
 export default function GeneratorPanel() {
   const replaceGraph = useGraphStore((s) => s.replaceGraph)
   const [shape, setShape] = useState<GraphShape>('random')
-  const [nodeCount, setNodeCount] = useState(12)
+  // The text box holds whatever the person is CURRENTLY typing, including a
+  // transient empty string or a partial number — it is only clamped into a
+  // real node count on blur or when Generate is pressed. Clamping on every
+  // keystroke (the Day 12 behavior) forced the field back to a minimum value
+  // mid-edit, so clearing "1" and typing "8" produced "18": the field never
+  // stayed empty long enough to receive a fresh digit.
+  const [nodeCountText, setNodeCountText] = useState(String(DEFAULT_NODE_COUNT))
   const [directed, setDirected] = useState(false)
   const [weighted, setWeighted] = useState(false)
 
   const generate = () => {
+    const nodeCount = clampNodeCount(nodeCountText)
+    setNodeCountText(String(nodeCount))
     const seed = Math.floor(Math.random() * 2 ** 31)
     replaceGraph(generateGraph({ shape, nodeCount, directed, weighted, seed }))
   }
@@ -48,10 +65,12 @@ export default function GeneratorPanel() {
             type="number"
             min={1}
             max={MAX_GENERATED_NODES}
-            value={nodeCount}
-            onChange={(e) => setNodeCount(Math.max(1, Math.min(MAX_GENERATED_NODES, Number(e.target.value))))}
+            value={nodeCountText}
+            onChange={(e) => setNodeCountText(e.target.value)}
+            onBlur={() => setNodeCountText(String(clampNodeCount(nodeCountText)))}
           />
         </label>
+
 
         <label className="row">
           <input

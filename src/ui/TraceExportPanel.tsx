@@ -1,5 +1,5 @@
 /**
- * Trace / image export panel (Day 17).
+ * Trace / image export panel (Day 17; popup fallback added Day 20).
  *
  * Two exports, both using only the browser's own capabilities (no PDF
  * library was added — the stack decisions at the top of this project are
@@ -10,13 +10,19 @@
  *    Day 17) in a new tab and calls the browser's native print dialog, where
  *    "Save as PDF" is a standard destination in every major browser. The
  *    generated page has print-only styling (see the <style> block below) so
- *    it prints cleanly without the rest of the app's chrome.
+ *    it prints cleanly without the rest of the app's chrome. If the browser
+ *    blocks the pop-up (common with a strict pop-up blocker, since this is
+ *    triggered from a click handler but goes through an async report build
+ *    first), the same HTML is downloaded as a .html file instead, so the
+ *    person still gets something usable: opening it and printing from their
+ *    own browser has the identical "Save as PDF" option.
  *  - "Export canvas as PNG" serializes the current SVG canvas, draws it onto
  *    an off-screen <canvas>, and downloads that as a PNG. This only captures
  *    the current step's snapshot, not the whole trace — the PDF report is
  *    what covers "the whole trace" as text.
  */
 import { buildTraceReport } from '../engine/traceReport'
+import type { TraceReport } from '../engine/traceReport'
 import { usePlaybackStore } from './playbackStore'
 import { useGraphStore } from './graphStore'
 
@@ -24,17 +30,11 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 }
 
-function exportTraceAsPdf(title: string, graph: ReturnType<typeof useGraphStore.getState>['graph'], events: Parameters<typeof buildTraceReport>[2]) {
-  const report = buildTraceReport(title, graph, events)
-  const printWindow = window.open('', '_blank', 'noopener,noreferrer')
-  if (!printWindow) {
-    window.alert('Your browser blocked the print window. Please allow pop-ups for this site and try again.')
-    return
-  }
+function buildReportHtml(report: TraceReport): string {
   const rows = report.steps
     .map((s) => `<li><span class="step-num">${s.index}.</span> ${escapeHtml(s.description)}</li>`)
     .join('\n')
-  printWindow.document.write(`<!doctype html>
+  return `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -54,10 +54,38 @@ function exportTraceAsPdf(title: string, graph: ReturnType<typeof useGraphStore.
   <p class="meta">${report.nodeCount} nodes, ${report.edgeCount} edges, ${report.stepCount} steps</p>
   <ol>${rows}</ol>
 </body>
-</html>`)
+</html>`
+}
+
+function downloadReportHtml(html: string) {
+  const blob = new Blob([html], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'trace-report.html'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function exportTraceAsPdf(title: string, graph: ReturnType<typeof useGraphStore.getState>['graph'], events: Parameters<typeof buildTraceReport>[2]) {
+  const report = buildTraceReport(title, graph, events)
+  const html = buildReportHtml(report)
+  const printWindow = window.open('', '_blank', 'noopener,noreferrer')
+  if (!printWindow) {
+    // Pop-up blocked: the person still gets a usable report, just one extra
+    // click away from printing, instead of nothing.
+    downloadReportHtml(html)
+    window.alert(
+      'Your browser blocked the print window, so the report was downloaded as an HTML file instead. ' +
+        'Open it and use your browser\'s own "Print… → Save as PDF" to get a PDF.',
+    )
+    return
+  }
+  printWindow.document.write(html)
   printWindow.document.close()
   printWindow.focus()
   printWindow.print()
+
 }
 
 function exportCanvasAsPng() {

@@ -19,6 +19,7 @@
 import { makeRandom } from '../engine/random'
 import type { Graph, GraphEdge, GraphNode } from './graph'
 import { SCHEMA_VERSION } from './graph'
+import { circleLayout } from './layout'
 
 export type GraphShape = 'random' | 'complete' | 'bipartite' | 'dag' | 'tree' | 'sparse' | 'dense'
 
@@ -45,10 +46,6 @@ export interface GeneratorOptions {
 
 export const MAX_GENERATED_NODES = 200
 
-const CENTER_X = 400
-const CENTER_Y = 250
-const LAYOUT_RADIUS = 210
-
 /** Same sequence as the editor: A..Z, then N26, N27, ... */
 export function nodeIdForIndex(i: number): string {
   return i < 26 ? String.fromCharCode(65 + i) : `N${i}`
@@ -67,14 +64,12 @@ export function generateGraph(options: GeneratorOptions): Graph {
   const randomInt = (n: number) => Math.floor(random() * n)
 
   const n = nodeCount
-  const nodes: GraphNode[] = Array.from({ length: n }, (_, i) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2
-    return {
-      id: nodeIdForIndex(i),
-      x: n === 1 ? CENTER_X : Math.round(CENTER_X + LAYOUT_RADIUS * Math.cos(angle)),
-      y: n === 1 ? CENTER_Y : Math.round(CENTER_Y + LAYOUT_RADIUS * Math.sin(angle)),
-    }
-  })
+  const positions = circleLayout(n)
+  const nodes: GraphNode[] = Array.from({ length: n }, (_, i) => ({
+    id: nodeIdForIndex(i),
+    x: positions[i].x,
+    y: positions[i].y,
+  }))
 
   // Pairs are (lower index, higher index). For directed graphs some shapes also add the reverse.
   const pairs: [number, number][] = []

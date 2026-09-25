@@ -180,4 +180,42 @@ describe('CSV import/export', () => {
     expect(() => parseCsvEdgeList('source,target,weight\nA,B,x', { directed: true })).toThrow(/invalid weight/)
     expect(() => parseCsvEdgeList('source,target\nA,', { directed: true })).toThrow(/missing a source or target/)
   })
+
+  it('strips a leading UTF-8 BOM before parsing the header (Excel-exported CSVs commonly have one)', () => {
+    const withBom = '\ufeffsource,target,weight\nA,B,4'
+    const g = parseCsvEdgeList(withBom, { directed: true })
+    expect(g.edges).toEqual([{ id: 'e1', source: 'A', target: 'B', weight: 4 }])
+  })
+
+  it('accepts double-quoted header and data cells', () => {
+    const quoted = '"source","target","weight"\n"A","B","4"'
+    const g = parseCsvEdgeList(quoted, { directed: true })
+    expect(g.edges).toEqual([{ id: 'e1', source: 'A', target: 'B', weight: 4 }])
+  })
+
+  it('gives a specific error when the header is fine but there are no data rows', () => {
+    expect(() => parseCsvEdgeList('source,target,weight', { directed: true })).toThrow(/no data rows/i)
+  })
+
+  it('gives every imported node real, spread-out coordinates instead of defaulting to (0, 0)', () => {
+    const g = parseCsvEdgeList('source,target\nA,B\nB,C\nC,A', { directed: true })
+    for (const n of g.nodes) {
+      expect(Number.isFinite(n.x)).toBe(true)
+      expect(Number.isFinite(n.y)).toBe(true)
+    }
+    const positions = new Set(g.nodes.map((n) => `${n.x},${n.y}`))
+    expect(positions.size).toBe(g.nodes.length) // no two nodes stacked on top of each other
+  })
+})
+
+describe('adjacency matrix and list also lay out their nodes', () => {
+  it('parseAdjacencyMatrix gives every node real coordinates', () => {
+    const g = parseAdjacencyMatrix('- 1 -\n1 - 1\n- 1 -', { directed: false })
+    for (const n of g.nodes) expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true)
+  })
+
+  it('parseAdjacencyList gives every node real coordinates', () => {
+    const g = parseAdjacencyList('A: B\nB: C\nC:', { directed: true })
+    for (const n of g.nodes) expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true)
+  })
 })

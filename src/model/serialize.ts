@@ -16,6 +16,7 @@
 import { addEdge, addNode, createGraph, SCHEMA_VERSION } from './graph'
 import type { Graph } from './graph'
 import { nodeIdForIndex } from './generator'
+import { circleLayout } from './layout'
 import { toAdjacencyList, toAdjacencyMatrix } from './representations'
 
 // ---------------------------------------------------------------------------
@@ -28,6 +29,21 @@ export function exportGraphToJson(graph: Graph): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Strips a leading UTF-8 byte-order mark, if present. Files saved by Excel
+ * and some other Windows tools start with one; without stripping it, the
+ * FIRST cell of the FIRST line (typically a header like "source") silently
+ * fails to match because it's actually "\ufeffsource".
+ */
+function stripBom(text: string): string {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text
+}
+
+/** Strips one layer of matching double quotes from a CSV cell, e.g. `"A"` -> `A`. */
+function unquoteCsvCell(cell: string): string {
+  return cell.length >= 2 && cell.startsWith('"') && cell.endsWith('"') ? cell.slice(1, -1) : cell
 }
 
 export function importGraphFromJson(text: string): Graph {
@@ -102,7 +118,7 @@ export function exportAdjacencyMatrixText(graph: Graph): string {
 }
 
 export function parseAdjacencyMatrix(text: string, options: DirectedOption): Graph {
-  const rows = text
+  const rows = stripBom(text)
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
@@ -119,8 +135,9 @@ export function parseAdjacencyMatrix(text: string, options: DirectedOption): Gra
 
   const weighted = values.some((row) => row.some((v) => v !== null && v !== 1))
 
+  const positions = circleLayout(n)
   let graph = createGraph({ directed: options.directed, weighted })
-  for (let i = 0; i < n; i++) graph = addNode(graph, { id: nodeIdForIndex(i) })
+  for (let i = 0; i < n; i++) graph = addNode(graph, { id: nodeIdForIndex(i), x: positions[i].x, y: positions[i].y })
 
   let edgeCount = 0
   for (let i = 0; i < n; i++) {
@@ -159,7 +176,7 @@ export function exportAdjacencyListText(graph: Graph): string {
 }
 
 export function parseAdjacencyList(text: string, options: DirectedOption): Graph {
-  const lines = text
+  const lines = stripBom(text)
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
@@ -197,8 +214,11 @@ export function parseAdjacencyList(text: string, options: DirectedOption): Graph
     throw new Error('Either give every neighbor a "(weight)", or none at all.')
   }
 
+  const positions = circleLayout(nodeIds.length)
   let graph = createGraph({ directed: options.directed, weighted })
-  for (const id of nodeIds) graph = addNode(graph, { id })
+  nodeIds.forEach((id, i) => {
+    graph = addNode(graph, { id, x: positions[i].x, y: positions[i].y })
+  })
 
   // An undirected paste naturally lists each edge from both ends ("A: B" and
   // "B: A"); only the first occurrence of a pair is kept, so it isn't doubled.
@@ -227,13 +247,13 @@ export function exportCsvEdgeList(graph: Graph): string {
 }
 
 export function parseCsvEdgeList(text: string, options: DirectedOption): Graph {
-  const lines = text
+  const lines = stripBom(text)
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
   if (lines.length === 0) throw new Error('No rows found.')
 
-  const header = lines[0].split(',').map((h) => h.trim().toLowerCase())
+  const header = lines[0].split(',').map((h) => unquoteCsvCell(h.trim()).toLowerCase())
   const sourceIdx = header.indexOf('source')
   const targetIdx = header.indexOf('target')
   const weightIdx = header.indexOf('weight')
@@ -253,8 +273,12 @@ export function parseCsvEdgeList(text: string, options: DirectedOption): Graph {
   }
   const rows: { source: string; target: string; weight?: number }[] = []
 
+  if (lines.length < 2) {
+    throw new Error('The header row was recognized, but there are no data rows below it.')
+  }
+
   lines.slice(1).forEach((line, i) => {
-    const cells = line.split(',').map((c) => c.trim())
+    const cells = line.split(',').map((c) => unquoteCsvCell(c.trim()))
     const source = cells[sourceIdx]
     const target = cells[targetIdx]
     if (!source || !target) throw new Error(`Row ${i + 2} is missing a source or target.`)
@@ -275,8 +299,11 @@ export function parseCsvEdgeList(text: string, options: DirectedOption): Graph {
     rows.push({ source, target, weight })
   })
 
+  const positions = circleLayout(nodeIds.length)
   let graph = createGraph({ directed: options.directed, weighted })
-  for (const id of nodeIds) graph = addNode(graph, { id })
+  nodeIds.forEach((id, i) => {
+    graph = addNode(graph, { id, x: positions[i].x, y: positions[i].y })
+  })
   rows.forEach((r, i) => {
     graph = addEdge(graph, {
       id: `e${i + 1}`,
