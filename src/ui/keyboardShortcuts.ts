@@ -1,7 +1,7 @@
 /**
- * Keyboard step-through (Day 18): pure helpers, kept separate from the DOM
- * event listener that uses them so the mapping itself is unit-testable
- * without simulating real keyboard/DOM events.
+ * Keyboard step-through (Day 18) and undo/redo shortcuts (Day 21): pure
+ * helpers, kept separate from the DOM event listeners that use them so the
+ * mapping itself is unit-testable without simulating real keyboard/DOM events.
  */
 
 export type PlaybackShortcut = 'stepForward' | 'stepBack' | 'playPause' | 'reset' | 'goToEnd'
@@ -18,6 +18,21 @@ const KEY_MAP: Record<string, PlaybackShortcut> = {
 /** Maps a KeyboardEvent.key to a playback action, or null if this key has no shortcut. */
 export function resolvePlaybackShortcut(key: string): PlaybackShortcut | null {
   return KEY_MAP[key] ?? null
+}
+
+export type HistoryShortcut = 'undo' | 'redo'
+
+/**
+ * Ctrl+Z (or Cmd+Z on Mac) undoes; Ctrl+Y or Ctrl+Shift+Z (or the Cmd
+ * equivalents) redoes — covering both common conventions (Windows/most apps
+ * use Y for redo, many Mac and some cross-platform apps use Shift+Z).
+ */
+export function resolveHistoryShortcut(key: string, ctrlOrMeta: boolean, shiftKey: boolean): HistoryShortcut | null {
+  if (!ctrlOrMeta) return null
+  const k = key.toLowerCase()
+  if (k === 'z') return shiftKey ? 'redo' : 'undo'
+  if (k === 'y') return 'redo'
+  return null
 }
 
 /**

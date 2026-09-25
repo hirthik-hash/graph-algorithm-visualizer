@@ -666,3 +666,8 @@ textarea:focus-visible,
   background: var(--bg);
   color: var(--text);
 }
+
+/* ---- Day 21: undo/redo ---- */
+.controls .hint {
+  margin: -4px 0 4px;
+}

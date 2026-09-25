@@ -155,6 +155,7 @@ export default function GraphCanvas() {
   const clickNode = useGraphStore((s) => s.clickNode)
   const removeNodeById = useGraphStore((s) => s.removeNodeById)
   const setEdgeWeight = useGraphStore((s) => s.setEdgeWeight)
+  const recordHistory = useGraphStore((s) => s.recordHistory)
 
   // Which edge's weight label is currently an inline editor, if any. This is
   // transient UI state, not graph data, so it lives here rather than in the
@@ -236,6 +237,10 @@ export default function GraphCanvas() {
       const dist = Math.hypot(e.clientX - d.startClientX, e.clientY - d.startClientY)
       if (dist < DRAG_THRESHOLD_PX) return
       d.moved = true
+      // A drag is now confirmed (not just a tap). Record ONE history entry
+      // for the whole gesture, before the first actual move — every
+      // following moveNode call in this same drag stays history-free.
+      recordHistory()
     }
     const p = toSvgPoint(e.clientX, e.clientY)
     moveNode(d.id, clamp(p.x, RADIUS, WIDTH - RADIUS), clamp(p.y, RADIUS, HEIGHT - RADIUS))

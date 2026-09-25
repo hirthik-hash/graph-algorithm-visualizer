@@ -1,9 +1,10 @@
 /**
- * Toolbar + edit dropdowns (Day 2).
+ * Toolbar + edit dropdowns (Day 2; Undo/Redo added Day 21).
  * Local state here is only UI drafts (which dropdown item is selected, text
  * being typed). The graph itself always lives in the store.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { isEditableTarget, resolveHistoryShortcut } from './keyboardShortcuts'
 import { useGraphStore } from './graphStore'
 import type { Graph } from '../model/graph'
 
@@ -20,6 +21,26 @@ export default function GraphControls() {
   const renameNode = useGraphStore((s) => s.renameNode)
   const removeEdgeById = useGraphStore((s) => s.removeEdgeById)
   const setEdgeWeight = useGraphStore((s) => s.setEdgeWeight)
+  const historyLength = useGraphStore((s) => s.history.length)
+  const futureLength = useGraphStore((s) => s.future.length)
+  const undo = useGraphStore((s) => s.undo)
+  const redo = useGraphStore((s) => s.redo)
+
+  // Ctrl+Z / Cmd+Z to undo, Ctrl+Y or Ctrl+Shift+Z (Cmd equivalents) to redo.
+  // Ignored while typing in a form field, so native text-field undo still works there.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null
+      if (isEditableTarget(target?.tagName, target?.isContentEditable)) return
+      const shortcut = resolveHistoryShortcut(event.key, event.ctrlKey || event.metaKey, event.shiftKey)
+      if (shortcut === null) return
+      event.preventDefault()
+      if (shortcut === 'undo') undo()
+      else redo()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [undo, redo])
 
   const [nodeId, setNodeId] = useState('')
   const [labelDraft, setLabelDraft] = useState('')
@@ -35,6 +56,16 @@ export default function GraphControls() {
   return (
     <section className="controls">
       <h2>Graph</h2>
+
+      <div className="row">
+        <button onClick={undo} disabled={historyLength === 0} aria-label="Undo">
+          ↶ Undo
+        </button>
+        <button onClick={redo} disabled={futureLength === 0} aria-label="Redo">
+          ↷ Redo
+        </button>
+      </div>
+      <p className="hint">Ctrl+Z to undo · Ctrl+Y or Ctrl+Shift+Z to redo</p>
 
       <label className="row">
         <input type="checkbox" checked={graph.directed} onChange={(e) => setDirected(e.target.checked)} />
