@@ -215,4 +215,26 @@ describe('playback store', () => {
     g().moveNode('B', 111, 111)
     expect(p().engine).not.toBeNull()
   })
+
+  it('undo/redo invalidates a loaded run exactly like any other structural edit (Day 21 interaction)', () => {
+    buildTriangleTree()
+    p().selectAlgorithm(bfsAlgorithm)
+    p().play()
+    expect(p().engine).not.toBeNull()
+
+    g().recordHistory()
+    g().addNodeAt(400, 400) // a structural change, same as any edit
+    expect(p().engine).toBeNull()
+    expect(p().invalidated).toBe(true)
+
+    g().undo() // back to the pre-add graph
+    expect(p().engine).toBeNull() // still invalidated: undo is itself a structural change
+    expect(p().invalidated).toBe(true)
+
+    p().selectAlgorithm(bfsAlgorithm)
+    p().run()
+    expect(p().engine).not.toBeNull()
+    g().redo() // forward again to the post-add graph
+    expect(p().engine).toBeNull()
+  })
 })
