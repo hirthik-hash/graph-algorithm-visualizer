@@ -6,7 +6,7 @@ import { dijkstraAlgorithm } from '../algorithms/dijkstra'
 import { kruskalAlgorithm } from '../algorithms/kruskal'
 import { primAlgorithm } from '../algorithms/prim'
 import type { Algorithm } from './algorithm'
-import { BIG_O, compareAlgorithms, explainDifference } from './compare'
+import { BIG_O, algorithmProblems, compareAlgorithms, explainDifference } from './compare'
 
 function triangle(): Graph {
   let g = createGraph({ weighted: true })
@@ -93,5 +93,20 @@ describe('explainDifference', () => {
     expect(explainDifference(bfsRow, bfsRow)).toBe('Pick two different algorithms to compare.')
     const notRun = compareAlgorithms(g, [{ ...primAlgorithm, id: 'x', requirements: { graphType: 'directed' } }])[0]
     expect(explainDifference(bfsRow, notRun)).toMatch(/did not run/)
+  })
+})
+
+describe('algorithmProblems', () => {
+  it('returns no problems when the algorithm can run with realistic default start/goal', () => {
+    expect(algorithmProblems(triangle(), dijkstraAlgorithm)).toEqual([])
+  })
+
+  it('returns the same problems checkRequirements would report for the default options', () => {
+    const directedOnly = { ...primAlgorithm, requirements: { graphType: 'directed' as const } }
+    expect(algorithmProblems(triangle(), directedOnly)).toEqual(['Requires a directed graph.'])
+  })
+
+  it('reports every algorithm as unusable on an empty graph that needs a start node', () => {
+    expect(algorithmProblems(createGraph(), bfsAlgorithm)).toEqual(['Requires a start node.'])
   })
 })

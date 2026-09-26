@@ -62,6 +62,17 @@ export function defaultOptions(graph: Graph): AlgorithmOptions {
   }
 }
 
+/**
+ * Whether `algorithm` could run on `graph` right now, using the same default
+ * start/goal the playback bar would fall back to. Returns the unmet
+ * requirements (empty when it can run) — the same list `checkRequirements`
+ * itself produces, just pre-filled with realistic defaults so the picker can
+ * show this BEFORE the person selects an algorithm, not after pressing Play.
+ */
+export function algorithmProblems(graph: Graph, algorithm: Algorithm): string[] {
+  return checkRequirements(algorithm, graph, defaultOptions(graph))
+}
+
 export function compareAlgorithms(
   graph: Graph,
   algorithms: readonly Algorithm[],

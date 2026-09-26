@@ -156,6 +156,7 @@ export default function GraphCanvas() {
   const removeNodeById = useGraphStore((s) => s.removeNodeById)
   const setEdgeWeight = useGraphStore((s) => s.setEdgeWeight)
   const recordHistory = useGraphStore((s) => s.recordHistory)
+  const newEdgeWeight = useGraphStore((s) => s.newEdgeWeight)
 
   // Which edge's weight label is currently an inline editor, if any. This is
   // transient UI state, not graph data, so it lives here rather than in the
@@ -367,6 +368,28 @@ export default function GraphCanvas() {
           )}
         </g>
       ))}
+
+      {/* Milestone 2: makes the weight the NEXT click-created edge will use
+          visible right where you're about to click, instead of only in the
+          side panel — the field itself was never wrong, it was just easy to
+          lose track of while focused on the canvas. */}
+      {graph.weighted && connectFromId !== null && nodeById.has(connectFromId) && (
+        <g className="pending-weight-badge">
+          {(() => {
+            const source = nodeById.get(connectFromId)!
+            const x = source.x ?? 0
+            const y = (source.y ?? 0) - RADIUS - 16
+            return (
+              <>
+                <rect x={x - 36} y={y - 10} width={72} height={20} rx={10} />
+                <text x={x} y={y} textAnchor="middle" dominantBaseline="middle">
+                  {`weight: ${newEdgeWeight}`}
+                </text>
+              </>
+            )
+          })()}
+        </g>
+      )}
     </svg>
   )
 }

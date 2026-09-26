@@ -120,6 +120,9 @@ export default function GraphControls() {
       </div>
 
       <h2>Edit edge</h2>
+      {graph.weighted && (
+        <p className="hint">Tip: you can also click a weight directly on the canvas to edit it in place.</p>
+      )}
       <select
         aria-label="Edge to edit"
         value={selectedEdge ? selectedEdge.id : ''}

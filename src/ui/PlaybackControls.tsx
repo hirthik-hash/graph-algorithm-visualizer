@@ -4,10 +4,22 @@
  */
 import { useEffect } from 'react'
 import { explainEvent } from '../engine/explain'
+import { algorithmProblems } from '../engine/compare'
+import type { AlgorithmCategory } from '../engine/algorithm'
 import { ALGORITHM_REGISTRY } from '../algorithms/registry'
 import { isEditableTarget, resolvePlaybackShortcut } from './keyboardShortcuts'
 import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
+
+/** Display order and labels for grouping the algorithm picker (Milestone 2). */
+const CATEGORY_ORDER: AlgorithmCategory[] = ['traversal', 'shortest-path', 'all-pairs', 'spanning-tree', 'ordering']
+const CATEGORY_LABEL: Record<AlgorithmCategory, string> = {
+  traversal: 'Traversal',
+  'shortest-path': 'Shortest Path',
+  'all-pairs': 'All-Pairs Shortest Path',
+  'spanning-tree': 'Minimum Spanning Tree',
+  ordering: 'Ordering',
+}
 
 
 /** Speed 1..10 maps to a delay of 1200ms / speed. */
@@ -90,11 +102,22 @@ export default function PlaybackControls() {
           onChange={(e) => selectAlgorithm(ALGORITHM_REGISTRY.find((a) => a.id === e.target.value) ?? null)}
         >
           <option value="">Choose an algorithm…</option>
-          {ALGORITHM_REGISTRY.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
+          {CATEGORY_ORDER.map((category) => {
+            const inCategory = ALGORITHM_REGISTRY.filter((a) => a.category === category)
+            if (inCategory.length === 0) return null
+            return (
+              <optgroup key={category} label={CATEGORY_LABEL[category]}>
+                {inCategory.map((a) => {
+                  const unmet = algorithmProblems(graph, a)
+                  return (
+                    <option key={a.id} value={a.id} disabled={unmet.length > 0}>
+                      {unmet.length > 0 ? `${a.name} — ${unmet[0]}` : a.name}
+                    </option>
+                  )
+                })}
+              </optgroup>
+            )
+          })}
         </select>
 
         <select
