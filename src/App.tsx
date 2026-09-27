@@ -1,20 +1,31 @@
 import './App.css'
 import AnalysisPanel from './ui/AnalysisPanel'
-import GraphCanvas from './ui/GraphCanvas'
 import CodeSyncPanel from './ui/CodeSyncPanel'
+import CollapsibleSection from './ui/CollapsibleSection'
 import ComparisonPanel from './ui/ComparisonPanel'
 import FloydWarshallView from './ui/FloydWarshallView'
-import GraphControls from './ui/GraphControls'
-import PlaybackControls from './ui/PlaybackControls'
 import GeneratorPanel from './ui/GeneratorPanel'
+import GraphCanvas from './ui/GraphCanvas'
+import GraphControls from './ui/GraphControls'
 import ImportExportPanel from './ui/ImportExportPanel'
-import ShareLinkPanel from './ui/ShareLinkPanel'
-import TraceExportPanel from './ui/TraceExportPanel'
+import PlaybackControls from './ui/PlaybackControls'
 import QuizPanel from './ui/QuizPanel'
 import RepresentationPanels from './ui/RepresentationPanels'
+import ShareLinkPanel from './ui/ShareLinkPanel'
+import TraceExportPanel from './ui/TraceExportPanel'
 import UnionFindDemo from './ui/UnionFindDemo'
 import { useGraphStore } from './ui/graphStore'
 
+/**
+ * Milestone 3: the canvas stays always visible at the top — collapsing it
+ * along with whichever section happens to be open would hide the one thing
+ * every other section refers back to. Everything else is grouped into five
+ * named, collapsible sections (Graph / Algorithms / Analysis / Learning /
+ * Tools), matching the categories chosen during the audit review, instead of
+ * fourteen panels stacked in one undifferentiated scroll. Graph and
+ * Algorithms default open, since drawing and running are the core loop;
+ * Analysis, Learning and Tools default closed as secondary/supporting.
+ */
 export default function App() {
   const notice = useGraphStore((s) => s.notice)
   const dismissNotice = useGraphStore((s) => s.dismissNotice)
@@ -34,37 +45,39 @@ export default function App() {
         </p>
       )}
 
-      <div className="layout">
-        <div>
-          <GraphCanvas />
-          <p className="hint">
-            Click empty space to add a node · drag a node to move it · click a node, then another, to connect them ·
-            click a node twice quickly to delete it · {nodeCount} nodes, {edgeCount} edges
-          </p>
-          <PlaybackControls />
-          <FloydWarshallView />
-          <CodeSyncPanel />
-        </div>
+      <GraphCanvas />
+      <p className="hint">
+        Click empty space to add a node · drag a node to move it · click a node, then another, to connect them ·
+        click a node twice quickly to delete it · {nodeCount} nodes, {edgeCount} edges
+      </p>
+
+      <CollapsibleSection title="Graph" defaultExpanded>
         <GraphControls />
-      </div>
+        <ImportExportPanel />
+      </CollapsibleSection>
 
-      <AnalysisPanel />
+      <CollapsibleSection title="Algorithms" defaultExpanded>
+        <PlaybackControls />
+        <FloydWarshallView />
+        <ComparisonPanel />
+      </CollapsibleSection>
 
-      <RepresentationPanels />
+      <CollapsibleSection title="Analysis">
+        <AnalysisPanel />
+        <RepresentationPanels />
+        <CodeSyncPanel />
+      </CollapsibleSection>
 
-      <GeneratorPanel />
+      <CollapsibleSection title="Learning">
+        <QuizPanel />
+        <UnionFindDemo />
+      </CollapsibleSection>
 
-      <ImportExportPanel />
-
-      <ShareLinkPanel />
-
-      <TraceExportPanel />
-
-      <ComparisonPanel />
-
-      <QuizPanel />
-
-      <UnionFindDemo />
+      <CollapsibleSection title="Tools">
+        <GeneratorPanel />
+        <ShareLinkPanel />
+        <TraceExportPanel />
+      </CollapsibleSection>
     </main>
   )
 }
