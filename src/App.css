@@ -762,3 +762,10 @@ select option:disabled {
   padding-left: 18px;
   line-height: 1.6;
 }
+
+/* ---- Milestone 5: scale warning (soft, non-blocking) ---- */
+.notice--warn {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border: none;
+}

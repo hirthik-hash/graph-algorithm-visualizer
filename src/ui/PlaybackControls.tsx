@@ -3,6 +3,7 @@
  * The algorithm list comes from the registry.
  */
 import { useEffect } from 'react'
+import { algorithmScaleWarning } from '../engine/scaleWarnings'
 import { explainEvent } from '../engine/explain'
 import { buildStepReasoning } from '../engine/reasoning'
 import { algorithmProblems } from '../engine/compare'
@@ -160,6 +161,18 @@ export default function PlaybackControls() {
           </ul>
         </div>
       )}
+
+      {problems.length === 0 &&
+        algorithm !== null &&
+        (() => {
+          const warning = algorithmScaleWarning(graph, algorithm)
+          if (warning === null) return null
+          return (
+            <p className="notice notice--warn" role="status">
+              {warning}
+            </p>
+          )
+        })()}
 
       {invalidated && problems.length === 0 && (
         <p className="notice" role="status">

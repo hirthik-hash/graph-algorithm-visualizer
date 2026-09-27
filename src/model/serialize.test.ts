@@ -219,3 +219,44 @@ describe('adjacency matrix and list also lay out their nodes', () => {
     for (const n of g.nodes) expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true)
   })
 })
+
+describe('large CSV import at realistic scale (Milestone 5 performance pass)', () => {
+  it('parses a 500-row CSV over 120 nodes correctly and quickly', () => {
+    let seed = 3
+    const rand = (m: number) => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296
+      return seed % m
+    }
+    const rows = ['source,target,weight']
+    for (let i = 0; i < 500; i++) {
+      rows.push(`n${rand(120)},n${rand(120)},${1 + rand(20)}`)
+    }
+    const csv = rows.join('\n')
+
+    const start = Date.now()
+    const g = parseCsvEdgeList(csv, { directed: true })
+    const elapsedMs = Date.now() - start
+
+    expect(g.edges).toHaveLength(500)
+    expect(g.weighted).toBe(true)
+    expect(g.nodes.length).toBeGreaterThan(0)
+    expect(g.nodes.length).toBeLessThanOrEqual(120)
+    for (const n of g.nodes) expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true) // Milestone-2-era layout fix still holds at this scale
+    expect(elapsedMs).toBeLessThan(2000)
+  })
+
+  it('a large export/import round trip preserves every edge exactly', () => {
+    const nodes = Array.from({ length: 100 }, (_, i) => ({ id: `n${i}` }))
+    const edges = Array.from({ length: 300 }, (_, i) => ({
+      id: `e${i}`,
+      source: `n${i % 100}`,
+      target: `n${(i * 3 + 7) % 100}`,
+      weight: 1 + (i % 15),
+    }))
+    const g = { ...createGraph({ weighted: true }), nodes, edges }
+    const reimported = parseCsvEdgeList(exportCsvEdgeList(g), { directed: true })
+    expect(reimported.edges.map((e) => [e.source, e.target, e.weight])).toEqual(
+      g.edges.map((e) => [e.source, e.target, e.weight]),
+    )
+  })
+})

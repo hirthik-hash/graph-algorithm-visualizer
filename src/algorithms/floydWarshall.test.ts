@@ -6,6 +6,7 @@ import type { Graph } from '../model/graph'
 import { bellmanFordAlgorithm } from './bellmanFord'
 import { dijkstraAlgorithm } from './dijkstra'
 import { floydWarshallAlgorithm } from './floydWarshall'
+import { estimateFloydWarshallCells } from '../engine/scaleWarnings'
 
 function graphOf(
   options: { directed?: boolean },
@@ -180,5 +181,60 @@ describe('Floyd-Warshall', () => {
     ])
     expect(floydWarshallAlgorithm.requirements).toEqual({ weighted: true })
     expect(checkRequirements(floydWarshallAlgorithm, createGraph())).toEqual(['Requires a weighted graph.'])
+  })
+})
+
+describe('Floyd-Warshall at real scale (Milestone 5 performance pass)', () => {
+  it('completes correctly and quickly on a 120-node dense graph', () => {
+    const n = 120
+    let seed = 7
+    const rand = (m: number) => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296
+      return seed % m
+    }
+    const nodes = Array.from({ length: n }, (_, i) => ({ id: `n${i}` }))
+    // Dense-ish: every pair of nodes gets an edge with ~40% probability.
+    const edges: { id: string; source: string; target: string; weight: number }[] = []
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (rand(100) < 40) edges.push({ id: `e${edges.length}`, source: `n${i}`, target: `n${j}`, weight: 1 + rand(9) })
+      }
+    }
+    const g: Graph = { ...createGraph({ weighted: true }), nodes, edges }
+
+    const start = Date.now()
+    const events = floydWarshallAlgorithm.run(g)
+    const elapsedMs = Date.now() - start
+
+    // Correctness at scale: right number of snapshots, right matrix shape, ends in finish.
+    const snapshots = events.filter((e) => e.type === 'matrix_update')
+    expect(snapshots).toHaveLength(n + 1) // one initial + one per waypoint
+    for (const snap of snapshots) {
+      expect(snap.type === 'matrix_update' && snap.matrix).toHaveLength(n)
+      expect(snap.type === 'matrix_update' && snap.matrix[0]).toHaveLength(n)
+    }
+    const last = events[events.length - 1]
+    expect(last.type).toBe('finish')
+
+    // Generous bound: this is a correctness-regression guard (catches an
+    // accidental O(V^4) bug, say), not a tight perf benchmark — real hardware
+    // varies too much for a tight bound to be anything but flaky.
+    expect(elapsedMs).toBeLessThan(5000)
+  })
+
+  it('the estimateFloydWarshallCells formula matches the real snapshot count at scale', () => {
+    const n = 40
+    const nodes = Array.from({ length: n }, (_, i) => ({ id: `n${i}` }))
+    const edges = Array.from({ length: 80 }, (_, i) => ({
+      id: `e${i}`,
+      source: `n${i % n}`,
+      target: `n${(i * 7 + 3) % n}`,
+      weight: 1 + (i % 9),
+    }))
+    const g: Graph = { ...createGraph({ weighted: true }), nodes, edges }
+    const events = floydWarshallAlgorithm.run(g)
+    const snapshots = events.filter((e) => e.type === 'matrix_update')
+    const realCellCount = snapshots.reduce((sum, s) => sum + (s.type === 'matrix_update' ? s.matrix.length * s.matrix.length : 0), 0)
+    expect(realCellCount).toBe(estimateFloydWarshallCells(n))
   })
 })
