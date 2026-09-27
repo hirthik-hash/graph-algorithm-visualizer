@@ -4,6 +4,7 @@
  */
 import { useEffect } from 'react'
 import { explainEvent } from '../engine/explain'
+import { buildStepReasoning } from '../engine/reasoning'
 import { algorithmProblems } from '../engine/compare'
 import type { AlgorithmCategory } from '../engine/algorithm'
 import { ALGORITHM_REGISTRY } from '../algorithms/registry'
@@ -219,6 +220,22 @@ export default function PlaybackControls() {
               ? 'Press Step or Play to begin.'
               : explainEvent(engine.currentEvent, labelOf)}
           </p>
+
+          {engine.currentEvent !== null &&
+            (() => {
+              const reasoning = buildStepReasoning(engine.eventsSoFar, labelOf)
+              if (reasoning === null) return null
+              return (
+                <div className="step-reasoning" aria-live="polite">
+                  <p className="step-reasoning-title">Why:</p>
+                  <ol>
+                    {reasoning.lines.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ol>
+                </div>
+              )
+            })()}
 
           <ol className="event-log" aria-label="Events">
             {engine.events.map((event, i) => (
