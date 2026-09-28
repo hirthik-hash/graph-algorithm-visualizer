@@ -119,4 +119,24 @@ describe('computeHighlights', () => {
     expect([...computeHighlights(events.slice(0, 1)).mstEdges]).toEqual(['e1'])
     expect(computeHighlights([]).mstEdges.size).toBe(0)
   })
+
+  it('tracks every node placed into some found SCC, across multiple scc_found events', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'scc_found', nodeIds: ['A', 'B'] },
+      { type: 'scc_found', nodeIds: ['C'] },
+    ]
+    expect([...computeHighlights(events).sccMembers].sort()).toEqual(['A', 'B', 'C'])
+    expect([...computeHighlights(events.slice(0, 1)).sccMembers].sort()).toEqual(['A', 'B'])
+  })
+
+  it('tracks found bridges and articulation points', () => {
+    const events: AlgorithmEvent[] = [
+      { type: 'bridge_found', edgeId: 'e1', source: 'A', target: 'B' },
+      { type: 'articulation_point_found', nodeId: 'B' },
+    ]
+    expect([...computeHighlights(events).bridgeEdges]).toEqual(['e1'])
+    expect([...computeHighlights(events).articulationPoints]).toEqual(['B'])
+    expect(computeHighlights([]).bridgeEdges.size).toBe(0)
+    expect(computeHighlights([]).articulationPoints.size).toBe(0)
+  })
 })

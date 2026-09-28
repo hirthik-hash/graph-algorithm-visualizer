@@ -18,6 +18,9 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
   matrix_update: { type: 'matrix_update', nodeIds: ['A', 'B'], matrix: [[0, 3], [null, 0]], waypointNodeId: 'A', changed: [[0, 1]] },
   add_to_mst: { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B', weight: 2 },
   reject_edge: { type: 'reject_edge', edgeId: 'e3', source: 'A', target: 'C', weight: 5, reason: 'would_form_cycle' },
+  scc_found: { type: 'scc_found', nodeIds: ['A', 'B'] },
+  bridge_found: { type: 'bridge_found', edgeId: 'e1', source: 'A', target: 'B' },
+  articulation_point_found: { type: 'articulation_point_found', nodeId: 'A' },
   finish: { type: 'finish', result: {} },
 }
 
@@ -101,6 +104,17 @@ describe('explainEvent', () => {
     expect(explainEvent(SAMPLES.reject_edge)).toBe('Rejected edge e3 (A — C, weight 5): it would form a cycle.')
     expect(explainEvent({ type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B' })).toBe(
       'Added edge e1 (A — B) to the spanning tree.',
+    )
+  })
+
+  it('explains SCC, bridge, and articulation-point events', () => {
+    expect(explainEvent(SAMPLES.scc_found)).toBe('Found a strongly connected component: { A, B }.')
+    expect(explainEvent({ type: 'scc_found', nodeIds: ['A'] })).toBe('A forms its own strongly connected component.')
+    expect(explainEvent(SAMPLES.bridge_found)).toBe(
+      'Edge e1 (A — B) is a bridge: removing it would disconnect the graph.',
+    )
+    expect(explainEvent(SAMPLES.articulation_point_found)).toBe(
+      'A is an articulation point: removing it would disconnect the graph.',
     )
   })
 })

@@ -114,6 +114,26 @@ export interface RejectEdgeEvent {
   reason: RejectReason
 }
 
+/** A group of nodes forming one strongly connected component (Tarjan's SCC), reported the moment it's fully identified. */
+export interface SccFoundEvent {
+  type: 'scc_found'
+  nodeIds: string[]
+}
+
+/** An edge whose removal would disconnect the graph (a bridge), found during a bridges/articulation-points DFS. */
+export interface BridgeFoundEvent {
+  type: 'bridge_found'
+  edgeId: string
+  source: string
+  target: string
+}
+
+/** A node whose removal would disconnect the graph (an articulation point / cut vertex). */
+export interface ArticulationPointFoundEvent {
+  type: 'articulation_point_found'
+  nodeId: string
+}
+
 /**
  * A snapshot of an all-pairs distance matrix (Floyd-Warshall). One event per
  * waypoint node, NOT one per cell: a per-cell event would be O(n^3) events.
@@ -147,6 +167,9 @@ export type AlgorithmEvent =
   | MatrixUpdateEvent
   | AddToMstEvent
   | RejectEdgeEvent
+  | SccFoundEvent
+  | BridgeFoundEvent
+  | ArticulationPointFoundEvent
   | FinishEvent
 
 export type AlgorithmEventType = AlgorithmEvent['type']
@@ -168,6 +191,9 @@ const EVENT_TYPE_SET: Record<AlgorithmEventType, true> = {
   matrix_update: true,
   add_to_mst: true,
   reject_edge: true,
+  scc_found: true,
+  bridge_found: true,
+  articulation_point_found: true,
   finish: true,
 }
 

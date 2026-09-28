@@ -13,6 +13,7 @@ import type { Algorithm } from '../engine/algorithm'
 import { aStarAlgorithm } from './aStar'
 import { bellmanFordAlgorithm } from './bellmanFord'
 import { bfsAlgorithm } from './bfs'
+import { bridgesArticulationAlgorithm } from './bridgesArticulation'
 import { countReachableAlgorithm } from './countReachable'
 import { dfsAlgorithm } from './dfs'
 import { dfsTopoSortAlgorithm } from './dfsTopoSort'
@@ -21,6 +22,7 @@ import { floydWarshallAlgorithm } from './floydWarshall'
 import { kahnsTopoSortAlgorithm } from './kahnsTopoSort'
 import { kruskalAlgorithm } from './kruskal'
 import { primAlgorithm } from './prim'
+import { tarjanSccAlgorithm } from './tarjanScc'
 
 export const ALGORITHM_REGISTRY: readonly Algorithm[] = [
   bfsAlgorithm,
@@ -34,6 +36,8 @@ export const ALGORITHM_REGISTRY: readonly Algorithm[] = [
   kahnsTopoSortAlgorithm,
   dfsTopoSortAlgorithm,
   countReachableAlgorithm,
+  tarjanSccAlgorithm,
+  bridgesArticulationAlgorithm,
 ]
 
 export function getAlgorithmById(id: string): Algorithm | undefined {

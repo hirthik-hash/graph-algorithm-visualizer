@@ -3,7 +3,7 @@ import { ALGORITHM_REGISTRY, getAlgorithmById } from './registry'
 
 describe('algorithm registry', () => {
   it('lists every algorithm built so far, each with a unique id', () => {
-    expect(ALGORITHM_REGISTRY.length).toBeGreaterThanOrEqual(11) // 10 real algorithms + the Day 15 plugin-architecture proof
+    expect(ALGORITHM_REGISTRY.length).toBeGreaterThanOrEqual(13) // 10 original + the Day 15 proof + Tarjan's SCC + bridges/articulation (Milestone 6)
     const ids = ALGORITHM_REGISTRY.map((a) => a.id)
     expect(new Set(ids).size).toBe(ids.length)
   })
@@ -20,5 +20,10 @@ describe('algorithm registry', () => {
       expect(typeof a.run).toBe('function')
       expect(typeof a.requirements).toBe('object')
     }
+  })
+
+  it('includes the Milestone 6 connectivity algorithms, so the registry-wide stress and comparison tests cover them', () => {
+    expect(getAlgorithmById('tarjan-scc')?.category).toBe('connectivity')
+    expect(getAlgorithmById('bridges-articulation')?.category).toBe('connectivity')
   })
 })

@@ -769,3 +769,31 @@ select option:disabled {
   color: var(--warn-text);
   border: none;
 }
+
+/* ---- Milestone 6: connectivity algorithms (SCC, bridges, articulation points) ---- */
+:root {
+  --scc-fill: #ccfbf1;
+  --scc-stroke: #0d9488;
+  --bridge: #ea580c;
+  --articulation: #9333ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --scc-fill: #134e4a;
+    --scc-stroke: #2dd4bf;
+    --bridge: #fb923c;
+    --articulation: #c084fc;
+  }
+}
+.node--scc circle {
+  fill: var(--scc-fill);
+  stroke: var(--scc-stroke);
+}
+.node--articulation circle {
+  stroke: var(--articulation);
+  stroke-width: 5;
+}
+.edge--bridge {
+  stroke: var(--bridge);
+  stroke-width: 6;
+}

@@ -14,13 +14,14 @@ import { useGraphStore } from './graphStore'
 import { usePlaybackStore } from './playbackStore'
 
 /** Display order and labels for grouping the algorithm picker (Milestone 2). */
-const CATEGORY_ORDER: AlgorithmCategory[] = ['traversal', 'shortest-path', 'all-pairs', 'spanning-tree', 'ordering']
+const CATEGORY_ORDER: AlgorithmCategory[] = ['traversal', 'shortest-path', 'all-pairs', 'spanning-tree', 'ordering', 'connectivity']
 const CATEGORY_LABEL: Record<AlgorithmCategory, string> = {
   traversal: 'Traversal',
   'shortest-path': 'Shortest Path',
   'all-pairs': 'All-Pairs Shortest Path',
   'spanning-tree': 'Minimum Spanning Tree',
   ordering: 'Ordering',
+  connectivity: 'Connectivity',
 }
 
 

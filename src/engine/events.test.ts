@@ -24,6 +24,9 @@ const SAMPLES: Record<AlgorithmEvent['type'], AlgorithmEvent> = {
   },
   add_to_mst: { type: 'add_to_mst', edgeId: 'e1', source: 'A', target: 'B', weight: 2 },
   reject_edge: { type: 'reject_edge', edgeId: 'e3', source: 'A', target: 'C', weight: 5, reason: 'would_form_cycle' },
+  scc_found: { type: 'scc_found', nodeIds: ['A', 'B'] },
+  bridge_found: { type: 'bridge_found', edgeId: 'e1', source: 'A', target: 'B' },
+  articulation_point_found: { type: 'articulation_point_found', nodeId: 'A' },
   finish: { type: 'finish', result: { hasCycle: false, order: ['A', 'B'], nested: { ok: true } } },
 }
 
@@ -43,6 +46,9 @@ describe('algorithm events', () => {
         'matrix_update',
         'negative_cycle_detected',
         'reject_edge',
+        'scc_found',
+        'bridge_found',
+        'articulation_point_found',
         'relax_edge',
         'update_distance',
         'visit_node',

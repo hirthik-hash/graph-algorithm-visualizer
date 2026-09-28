@@ -86,6 +86,19 @@ export function explainEvent(event: AlgorithmEvent, labelOf: (nodeId: string) =>
       return `Rejected edge ${edge}: ${rejectReasonText[event.reason]}.`
     }
 
+    case 'scc_found': {
+      const names = event.nodeIds.map(labelOf).join(', ')
+      return event.nodeIds.length === 1
+        ? `${names} forms its own strongly connected component.`
+        : `Found a strongly connected component: { ${names} }.`
+    }
+
+    case 'bridge_found':
+      return `Edge ${event.edgeId} (${labelOf(event.source)} — ${labelOf(event.target)}) is a bridge: removing it would disconnect the graph.`
+
+    case 'articulation_point_found':
+      return `${labelOf(event.nodeId)} is an articulation point: removing it would disconnect the graph.`
+
     case 'finish':
       return 'Finished.'
 

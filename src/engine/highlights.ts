@@ -13,6 +13,11 @@
  *  - distances: each node's latest known distance (Day 7); unreached nodes are absent
  *  - mstEdges / rejectedEdges: edges accepted / refused so far (Day 9, spanning trees)
  *  - matrix / waypoint: the latest matrix snapshot and its waypoint node (Day 8, Floyd-Warshall)
+ *  - sccMembers: every node placed into SOME strongly connected component found so far
+ *    (Milestone 6). Not grouped by which component — see the events themselves
+ *    (scc_found) for that — this is only "has this node's component been found yet".
+ *  - bridgeEdges / articulationPoints: edges/nodes found so far to be a bridge /
+ *    an articulation point (Milestone 6, bridges & articulation points).
  */
 import type { AlgorithmEvent, MatrixUpdateEvent } from './events'
 
@@ -26,6 +31,9 @@ export interface Highlights {
   rejectedEdges: Set<string>
   matrix: MatrixUpdateEvent | null
   waypoint: string | null
+  sccMembers: Set<string>
+  bridgeEdges: Set<string>
+  articulationPoints: Set<string>
 }
 
 export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highlights {
@@ -34,6 +42,9 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
   const distances = new Map<string, number>()
   const mstEdges = new Set<string>()
   const rejectedEdges = new Set<string>()
+  const sccMembers = new Set<string>()
+  const bridgeEdges = new Set<string>()
+  const articulationPoints = new Set<string>()
   const activePath: string[] = []
   let matrix: MatrixUpdateEvent | null = null
 
@@ -66,6 +77,15 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
       case 'reject_edge':
         rejectedEdges.add(event.edgeId)
         break
+      case 'scc_found':
+        for (const nodeId of event.nodeIds) sccMembers.add(nodeId)
+        break
+      case 'bridge_found':
+        bridgeEdges.add(event.edgeId)
+        break
+      case 'articulation_point_found':
+        articulationPoints.add(event.nodeId)
+        break
       default:
         break // relax_edge, finish, ... don't change node state
     }
@@ -82,5 +102,8 @@ export function computeHighlights(eventsSoFar: readonly AlgorithmEvent[]): Highl
     rejectedEdges,
     matrix,
     waypoint: matrix?.waypointNodeId ?? null,
+    sccMembers,
+    bridgeEdges,
+    articulationPoints,
   }
 }

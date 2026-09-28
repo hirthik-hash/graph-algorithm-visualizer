@@ -48,6 +48,8 @@ export const BIG_O: Record<string, { time: string; space: string }> = {
   kruskal: { time: 'O(E log E)', space: 'O(V)' },
   kahn: { time: 'O(V + E)', space: 'O(V)' },
   'dfs-topo': { time: 'O(V + E)', space: 'O(V)' },
+  'tarjan-scc': { time: 'O(V + E)', space: 'O(V)' },
+  'bridges-articulation': { time: 'O(V + E)', space: 'O(V)' },
 }
 
 const UNKNOWN_COMPLEXITY = '—'

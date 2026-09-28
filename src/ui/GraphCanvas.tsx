@@ -188,12 +188,15 @@ export default function GraphCanvas() {
   const edgeClass = (edgeId: string) => {
     if (highlights.mstEdges.has(edgeId)) return 'edge edge--mst'
     if (highlights.rejectedEdges.has(edgeId)) return 'edge edge--rejected'
+    if (highlights.bridgeEdges.has(edgeId)) return 'edge edge--bridge'
     return edgeId === highlights.examinedEdgeId ? 'edge edge--examined' : 'edge'
   }
   const nodeClass = (nodeId: string) => {
     const classes = ['node']
     if (nodeId === connectFromId) classes.push('node--source')
     if (nodeId === highlights.waypoint) classes.push('node--waypoint')
+    if (highlights.articulationPoints.has(nodeId)) classes.push('node--articulation')
+    if (highlights.sccMembers.has(nodeId)) classes.push('node--scc')
     if (nodeId === highlights.active) classes.push('node--active')
     else if (highlights.visited.has(nodeId)) classes.push('node--visited')
     else if (highlights.frontier.has(nodeId)) classes.push('node--frontier')

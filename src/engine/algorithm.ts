@@ -15,6 +15,7 @@ export type AlgorithmCategory =
   | 'all-pairs'
   | 'spanning-tree'
   | 'ordering'
+  | 'connectivity'
 
 /** Per-run inputs. A real object (not an encoded string) so A*'s goal node has a proper home. */
 export interface AlgorithmOptions {
